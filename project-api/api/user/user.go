@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	common "test.com/project-common"
+	"test.com/project-common/errs"
 	LoginServiceV1 "test.com/project-user/pkg/service/login.service.v1"
 	"time"
 )
@@ -24,7 +25,8 @@ func (h *HandlerUser) getCaptcha(ctx *gin.Context) {
 	defer cancle() // ↓ rpc 调用user service server
 	captchaRsp, err := LoginServiceClient.GetCaptcha(c, &LoginServiceV1.CaptchaMessage{Mobile: mobile})
 	if err != nil {
-		ctx.JSON(http.StatusOK, result.Fail(2001, err.Error()))
+		code, msg := errs.ParseGrpcError(err)
+		ctx.JSON(http.StatusOK, result.Fail(code, msg))
 		return
 	}
 	ctx.JSON(http.StatusOK, result.Success(captchaRsp.Code)) // 由api网关响应给客户端

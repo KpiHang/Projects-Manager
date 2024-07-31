@@ -6,7 +6,7 @@ import (
 	"test.com/project-user/config"
 	"test.com/project-user/router"
 
-	_ "test.com/project-user/api/user"
+	_ "test.com/project-user/api/user" // 这可以不用要；
 )
 
 func main() {

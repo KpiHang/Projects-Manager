@@ -2,11 +2,12 @@ package login_service_v1
 
 import (
 	"context"
-	"errors"
 	"go.uber.org/zap"
 	"log"
 	common "test.com/project-common"
+	"test.com/project-common/errs"
 	"test.com/project-user/pkg/dao"
+	"test.com/project-user/pkg/model"
 	"test.com/project-user/pkg/repo"
 	"time"
 )
@@ -28,10 +29,10 @@ func (ls *LoginService) GetCaptcha(ctx context.Context, msg *CaptchaMessage) (*C
 	mobile := msg.Mobile
 	// 2. 校验参数
 	if !common.VerifyMobile(mobile) {
-		return nil, errors.New("手机号不合法")
+		return nil, errs.GrpcError(model.NoLegalMobile)
 	}
 	// 3. 生成验证码（随机4位1000-9999 或者 6位 100000-999999） 因为在线的验证码服务不给个人开放，这样替代一下；
-	code := "123456"
+	code := "123458"
 	// 4. 调用短信平台（第三方，放入go协程中，接口可以快速响应）
 	go func() {
 		time.Sleep(2 * time.Second)

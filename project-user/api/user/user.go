@@ -8,7 +8,6 @@ import (
 	"net/http"
 	common "test.com/project-common"
 	"test.com/project-user/pkg/dao"
-	"test.com/project-user/pkg/model"
 	"test.com/project-user/pkg/repo"
 	"time"
 )
@@ -28,7 +27,7 @@ func (h *HandlerUser) getCaptcha(ctx *gin.Context) {
 	mobile := ctx.PostForm("mobile")
 	// 2. 校验参数
 	if !common.VerifyMobile(mobile) {
-		ctx.JSON(http.StatusOK, rsp.Fail(model.NoLegalMobile, "手机号不合法"))
+		ctx.JSON(http.StatusOK, rsp.Fail(000000, "手机号不合法")) // model.NoLegalMobile
 		return
 	}
 	// 3. 生成验证码（随机4位1000-9999 或者 6位 100000-999999） 因为在线的验证码服务不给个人开放，这样替代一下；
