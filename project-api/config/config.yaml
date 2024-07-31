@@ -1,0 +1,10 @@
+server:
+  name: "project-api"
+  Addr: "127.0.0.1:80"
+zap:
+  debugFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-debug.log"
+  infoFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-info.log"
+  warnFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-error.log"
+  maxSize: 10
+  maxAge: 28
+  MaxBackups: 2

@@ -1,0 +1,27 @@
+// 使用 Protocol Buffers 的第三版语法
+syntax = "proto3";
+
+// 定义 Protobuf 文件的包名，用于组织和区分不同的 Protobuf 文件
+package login.service.v1;
+
+// 指定生成的 Go 代码的包路径；
+option go_package = "project-user/pkg/service/login.service.v1";
+
+// 定义一个消息类型 CaptchaMessage，用于请求验证码
+message CaptchaMessage {
+  // 字段 mobile，类型为字符串（string），字段编号为 1
+  // 这个字段通常用于传递手机号
+  string mobile = 1;
+}
+
+// 定义一个消息类型 CaptchaResponse，用于响应验证码请求
+message CaptchaResponse {
+  string code = 1;
+}
+
+// 定义一个服务 LoginService，包含获取验证码的功能
+service LoginService {
+  // 定义一个远程过程调用（RPC）方法 GetCaptcha
+  // 这个方法接收一个 CaptchaMessage 类型的请求，并返回一个 CaptchaResponse 类型的响应
+  rpc GetCaptcha(CaptchaMessage) returns (CaptchaResponse) {}
+}

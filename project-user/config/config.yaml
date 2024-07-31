@@ -1,0 +1,18 @@
+server:
+  name: "project-user"
+  Addr: "127.0.0.1:8080"
+zap:
+  debugFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-debug.log"
+  infoFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-info.log"
+  warnFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-error.log"
+  maxSize: 10
+  maxAge: 28
+  MaxBackups: 2
+redis:
+  host: "localhost"
+  port: 6379
+  password: "123456"
+  db: 0
+grpc:
+  name: "user"
+  addr: "127.0.0.1:8881"
