@@ -5,3 +5,4 @@
 {"level":"INFO","time":"2024-07-31T19:37:18.163+0800","caller":"login.service.v1/login_service.go:38","msg":"短信平台调用成功，发送短信"}
 {"level":"INFO","time":"2024-07-31T19:57:55.618+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
 {"level":"INFO","time":"2024-08-01T11:37:16.002+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-08-01T13:26:22.310+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}

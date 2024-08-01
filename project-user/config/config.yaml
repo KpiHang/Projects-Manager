@@ -16,3 +16,9 @@ redis:
 grpc:
   name: "user"
   addr: "127.0.0.1:8881"
+  version: "1.0.0"
+  weight: 2  # 和etcd负载均衡，backend的权重相关；
+etcd:
+  Addrs:
+    - "127.0.0.1:2379"
+

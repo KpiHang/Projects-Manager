@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Register for grpc server
+// Register for grpc server；grpc的服务注册到etcd中；
 type Register struct {
 	EtcdAddrs   []string
 	DialTimeout int
@@ -66,7 +66,7 @@ func (r *Register) Register(srvInfo Server, ttl int64) (chan<- struct{}, error) 
 	return r.closeCh, nil
 }
 
-// Stop stop register
+// Stop register
 func (r *Register) Stop() {
 	r.closeCh <- struct{}{}
 }
@@ -99,7 +99,7 @@ func (r *Register) unregister() error {
 	return err
 }
 
-// keepAlive
+// keepAlive 要负载均衡的话，就要知道每个backend的健康状况，就定期的去检查一下；
 func (r *Register) keepAlive() {
 	ticker := time.NewTicker(time.Duration(r.srvTTL) * time.Second)
 	for {

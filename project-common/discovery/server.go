@@ -11,7 +11,7 @@ import (
 
 type Server struct {
 	Name    string `json:"name"`
-	Addr    string `json:"addr"`    //服务地址
+	Addr    string `json:"addr"`    //服务地址  // 名字相同但地址不同就是负载均衡；
 	Version string `json:"version"` //服务版本
 	Weight  int64  `json:"weight"`  //服务权重
 }

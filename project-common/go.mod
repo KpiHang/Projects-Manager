@@ -2,8 +2,6 @@ module test.com/project-common
 
 go 1.22.4
 
-replace google.golang.org/grpc => google.golang.org/grpc v1.51.0
-
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible

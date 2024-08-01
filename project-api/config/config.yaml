@@ -8,3 +8,6 @@ zap:
   maxSize: 10
   maxAge: 28
   MaxBackups: 2
+etcd:
+  Addrs:
+    - "127.0.0.1:2379"

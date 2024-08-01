@@ -3,8 +3,11 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/resolver"
 	"log"
 	"net"
+	"test.com/project-common/discovery"
+	"test.com/project-common/logs"
 	"test.com/project-user/config"
 	LoginServiceV1 "test.com/project-user/pkg/service/login.service.v1"
 )
@@ -66,6 +69,22 @@ func RegisterGrpc() *grpc.Server {
 			log.Fatalln("failed to serve:", err)
 		}
 	}()
-
 	return s
+}
+
+func RegisterEtcdServer() {
+	etcdRegister := discovery.NewResolver(config.Conf.EtcdConfig.Addrs, logs.LG)
+	resolver.Register(etcdRegister)
+
+	info := discovery.Server{
+		Name:    config.Conf.GC.Name,
+		Addr:    config.Conf.GC.Addr,
+		Version: config.Conf.GC.Version,
+		Weight:  config.Conf.GC.Weight,
+	}
+	r := discovery.NewRegister(config.Conf.EtcdConfig.Addrs, logs.LG)
+	_, err := r.Register(info, 2)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
