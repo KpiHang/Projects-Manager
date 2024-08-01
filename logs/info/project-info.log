@@ -1,0 +1,10 @@
+{"level":"INFO","time":"2024-07-30T14:41:37.125+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:41:37.127+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:47:17.349+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:47:17.350+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:52:01.275+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:52:01.276+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:52:27.303+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:52:27.304+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:53:12.841+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:53:12.841+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}

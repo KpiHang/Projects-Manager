@@ -1,0 +1,23 @@
+{"level":"INFO","time":"2024-07-30T14:41:37.125+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"DEBUG","time":"2024-07-30T14:41:37.127+0800","caller":"user/user.go:41","msg":"test 短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:41:37.127+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:47:17.349+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"DEBUG","time":"2024-07-30T14:47:17.350+0800","caller":"user/user.go:41","msg":"test 短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:47:17.350+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:52:01.275+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"DEBUG","time":"2024-07-30T14:52:01.276+0800","caller":"user/user.go:41","msg":"test 短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:52:01.276+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:52:27.303+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"DEBUG","time":"2024-07-30T14:52:27.304+0800","caller":"user/user.go:41","msg":"test 短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:52:27.304+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T14:53:12.841+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"DEBUG","time":"2024-07-30T14:53:12.841+0800","caller":"user/user.go:41","msg":"test 短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T14:53:12.841+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-30T16:06:02.358+0800","caller":"user/user.go:40","msg":"短信平台调用成功，发送短信"}
+{"level":"DEBUG","time":"2024-07-30T16:06:02.359+0800","caller":"user/user.go:41","msg":"test 短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-07-30T16:06:02.360+0800","caller":"user/user.go:42","msg":"test : 短信平台调用失败，发送短信"}
+{"level":"INFO","time":"2024-07-31T16:03:16.501+0800","caller":"login.service.v1/login_service.go:38","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-07-31T16:45:29.835+0800","caller":"login.service.v1/login_service.go:38","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-07-31T19:37:18.163+0800","caller":"login.service.v1/login_service.go:38","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-07-31T19:57:55.618+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-08-01T11:37:16.002+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
