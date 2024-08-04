@@ -11,10 +11,11 @@ import (
 var Conf = InitConfig()
 
 type Config struct {
-	viper      *viper.Viper
-	SC         *ServerConifg
-	GC         *GrpcConfig
-	EtcdConfig *EtcdConfig
+	viper       *viper.Viper
+	SC          *ServerConifg
+	GC          *GrpcConfig
+	EtcdConfig  *EtcdConfig
+	MysqlConfig *MysqlConfig
 }
 
 type ServerConifg struct {
@@ -33,6 +34,14 @@ type EtcdConfig struct {
 	Addrs []string
 }
 
+type MysqlConfig struct {
+	Username string
+	Password string
+	Host     string
+	Port     int
+	Db       string
+}
+
 func InitConfig() *Config {
 	config := &Config{viper: viper.New()}
 	workDir, _ := os.Getwd() // 返回的是你运行命令时所在的工作目录，而不是 main.go 文件所在的目录。
@@ -48,6 +57,7 @@ func InitConfig() *Config {
 	config.InitZapLog()      // 加载日志配置；加载=读取+用；直接用上了；
 	config.GetGrpcConfig()
 	config.ReadEtcdConfig()
+	config.ReadMysqlConfig()
 	return config
 }
 
@@ -102,4 +112,15 @@ func (c *Config) ReadEtcdConfig() {
 	}
 	ec.Addrs = addrs
 	c.EtcdConfig = ec
+}
+
+func (c *Config) ReadMysqlConfig() {
+	mc := &MysqlConfig{
+		Username: c.viper.GetString("mysql.username"),
+		Password: c.viper.GetString("mysql.password"),
+		Host:     c.viper.GetString("mysql.host"),
+		Port:     c.viper.GetInt("mysql.port"),
+		Db:       c.viper.GetString("mysql.db"),
+	}
+	c.MysqlConfig = mc
 }

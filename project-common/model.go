@@ -1,6 +1,8 @@
 package common
 
 type BusinessCode int
+
+// Result 最终返回给客户端浏览器的响应结果。
 type Result struct {
 	Code BusinessCode `json:"code"`
 	Msg  string       `json:"msg"`

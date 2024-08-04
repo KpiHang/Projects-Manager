@@ -3,10 +3,12 @@ package user
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"net/http"
+	"test.com/project-api/pkg/model/user"
 	common "test.com/project-common"
 	"test.com/project-common/errs"
-	LoginServiceV1 "test.com/project-user/pkg/service/login.service.v1"
+	"test.com/project-grpc/user/login"
 	"time"
 )
 
@@ -23,11 +25,49 @@ func (h *HandlerUser) getCaptcha(ctx *gin.Context) {
 	mobile := ctx.PostForm("mobile") // 客户端给API发请求，携带mobile参数；
 	c, cancle := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancle() // ↓ rpc 调用user service server
-	captchaRsp, err := LoginServiceClient.GetCaptcha(c, &LoginServiceV1.CaptchaMessage{Mobile: mobile})
+	captchaRsp, err := LoginServiceClient.GetCaptcha(c, &login.CaptchaMessage{Mobile: mobile})
 	if err != nil {
 		code, msg := errs.ParseGrpcError(err)
 		ctx.JSON(http.StatusOK, result.Fail(code, msg))
 		return
 	}
 	ctx.JSON(http.StatusOK, result.Success(captchaRsp.Code)) // 由api网关响应给客户端
+}
+
+func (h *HandlerUser) Register(ctx *gin.Context) {
+	// 1. 接收参数；需要有一个参数的模型（结构体、Model）
+	// 2. 校验参数；参数是否合法；
+	// 3. 调用user 注册的grpc服务；
+	// 4. 返回响应
+
+	gatewayResponse := &common.Result{}
+	// 1. 接收参数；需要有一个参数的模型（结构体、Model）
+	var req user.RegisterReq
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "参数格式有误"))
+		return
+	}
+	// 2. 校验参数；参数是否合法；
+	if err := req.Verify(); err != nil {
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, err.Error()))
+		return
+	}
+	// 3. 调用user 注册的grpc服务；
+	c, cancle := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancle()
+	msg := &login.RegisterMessage{}
+	err = copier.Copy(msg, req)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "copy 参数格式有误"))
+		return
+	}
+	_, err = LoginServiceClient.Register(c, msg) // 在user 模块中写注册相关的grpc服务；
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err) // grpc 服务返回的code msg
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(code, msg))
+		return
+	}
+	// 4. 返回响应
+	ctx.JSON(http.StatusOK, gatewayResponse.Success("")) // 由api网关响应给客户端
 }

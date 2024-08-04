@@ -19,9 +19,22 @@ message CaptchaResponse {
   string code = 1;
 }
 
+// 定义一个消息类型 RegisterMessage，用于注册用户
+message RegisterMessage {
+  string mobile = 1;
+  string name = 2;
+  string password = 3;
+  string captcha = 4;
+  string email = 5;
+}
+
+message RegisterResponse{
+}
+
 // 定义一个服务 LoginService，包含获取验证码的功能
 service LoginService {
   // 定义一个远程过程调用（RPC）方法 GetCaptcha
   // 这个方法接收一个 CaptchaMessage 类型的请求，并返回一个 CaptchaResponse 类型的响应
   rpc GetCaptcha(CaptchaMessage) returns (CaptchaResponse) {}
+  rpc Register(RegisterMessage) returns (RegisterResponse) {}
 }

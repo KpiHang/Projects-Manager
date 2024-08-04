@@ -8,7 +8,7 @@
 
 // 定义 Protobuf 文件的包名，用于组织和区分不同的 Protobuf 文件
 
-package login_service_v1
+package login
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"

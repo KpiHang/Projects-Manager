@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	common "test.com/project-common"
-	"test.com/project-user/pkg/dao"
-	"test.com/project-user/pkg/repo"
+	"test.com/project-user/internal/dao"
+	"test.com/project-user/internal/repo"
 	"time"
 )
 

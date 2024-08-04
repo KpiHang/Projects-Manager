@@ -7,3 +7,16 @@
 {"level":"INFO","time":"2024-08-01T11:37:16.002+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
 {"level":"INFO","time":"2024-08-01T13:26:22.310+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
 {"level":"INFO","time":"2024-08-01T14:25:01.472+0800","caller":"login.service.v1/login_service.go:39","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-08-04T15:17:29.586+0800","caller":"discovery/resolver.go:104","msg":"sync failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-04T17:08:44.968+0800","caller":"login.service.v1/login_service.go:66","msg":"从redis中获取验证码出错：","error":"redis: nil"}
+{"level":"ERROR","time":"2024-08-04T17:12:57.763+0800","caller":"login.service.v1/login_service.go:66","msg":"从redis中获取验证码出错：","error":"redis: nil"}
+{"level":"ERROR","time":"2024-08-04T17:12:57.788+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"etcdserver: requested lease not found"}
+{"level":"INFO","time":"2024-08-04T17:13:03.628+0800","caller":"login.service.v1/login_service.go:42","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-08-04T17:46:19.139+0800","caller":"login.service.v1/login_service.go:47","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-08-04T17:51:35.946+0800","caller":"login.service.v1/login_service.go:71","msg":"从redis中获取验证码出错：","error":"redis: nil"}
+{"level":"INFO","time":"2024-08-04T20:12:07.351+0800","caller":"login.service.v1/login_service.go:53","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-08-04T20:12:18.920+0800","caller":"login.service.v1/login_service.go:141","msg":"register SaveOrganization db err","error":"Error 1406 (22001): Data too long for column 'avatar' at row 1"}
+{"level":"INFO","time":"2024-08-04T20:13:14.035+0800","caller":"login.service.v1/login_service.go:53","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-08-04T20:13:14.673+0800","caller":"login.service.v1/login_service.go:128","msg":"Register DB  save member error, ","error":"sql: transaction has already been committed or rolled back"}
+{"level":"ERROR","time":"2024-08-04T20:27:35.236+0800","caller":"login.service.v1/login_service.go:89","msg":"Register DB error, ","error":"sql: transaction has already been committed or rolled back"}
+{"level":"INFO","time":"2024-08-04T20:29:53.697+0800","caller":"login.service.v1/login_service.go:53","msg":"短信平台调用成功，发送短信"}

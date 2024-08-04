@@ -8,10 +8,10 @@ import (
 	"test.com/project-api/config"
 	"test.com/project-common/discovery"
 	"test.com/project-common/logs"
-	LoginServiceV1 "test.com/project-user/pkg/service/login.service.v1"
+	"test.com/project-grpc/user/login"
 )
 
-var LoginServiceClient LoginServiceV1.LoginServiceClient
+var LoginServiceClient login.LoginServiceClient
 
 func InitRpcUserClient() {
 	// etcd 相关
@@ -24,5 +24,5 @@ func InitRpcUserClient() {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	LoginServiceClient = LoginServiceV1.NewLoginServiceClient(conn)
+	LoginServiceClient = login.NewLoginServiceClient(conn)
 }

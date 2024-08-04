@@ -9,5 +9,13 @@ import (
 //)
 
 var (
-	NoLegalMobile = errs.NewError(2001, "手机号不合法")
+	RedisError = errs.NewError(999, "redis 错误")
+	DBError    = errs.NewError(998, "DB 错误")
+
+	NoLegalMobile   = errs.NewError(10102001, "手机号不合法") // 10 user模块 10 登录相关
+	CaptchaNotExist = errs.NewError(10102002, "验证码不存在，或者已过期")
+	CaptchaError    = errs.NewError(10102003, "验证码错误")
+	EmailExist      = errs.NewError(10102004, "邮箱已经存在")
+	AccountExist    = errs.NewError(10102005, "账号已经存在")
+	MobileExist     = errs.NewError(10102006, "手机号已经存在")
 )

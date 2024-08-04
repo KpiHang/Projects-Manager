@@ -8,6 +8,7 @@ import (
 	"net"
 	"test.com/project-common/discovery"
 	"test.com/project-common/logs"
+	"test.com/project-grpc/user/login"
 	"test.com/project-user/config"
 	LoginServiceV1 "test.com/project-user/pkg/service/login.service.v1"
 )
@@ -54,7 +55,7 @@ func RegisterGrpc() *grpc.Server {
 	c := gRPCConfig{
 		Addr: config.Conf.GC.Addr,
 		RegisterFunc: func(g *grpc.Server) {
-			LoginServiceV1.RegisterLoginServiceServer(g, LoginServiceV1.NewLoginService()) // 生成代码中提供的函数；
+			login.RegisterLoginServiceServer(g, LoginServiceV1.NewLoginService()) // 生成代码中提供的函数；
 		}}
 	s := grpc.NewServer()                 // 创建了一个新的gRPC服务器实例 s。
 	c.RegisterFunc(s)                     // 将服务注册到gRPC服务器 s 上
