@@ -21,3 +21,9 @@ func (o *OrganizationDao) SaveOrganization(conn database.DbConn, ctx context.Con
 	o.conn = conn.(*gorms.GormConn)
 	return o.conn.Tx(ctx).Create(org).Error
 }
+
+func (o *OrganizationDao) FindOrganizationByMemberId(ctx context.Context, memId int64) ([]*organization.Organization, error) {
+	var orgs []*organization.Organization
+	err := o.conn.Session(ctx).Where("member_id = ?", memId).Find(&orgs).Error
+	return orgs, err
+}

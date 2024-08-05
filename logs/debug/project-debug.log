@@ -36,3 +36,6 @@
 {"level":"ERROR","time":"2024-08-04T20:13:14.673+0800","caller":"login.service.v1/login_service.go:128","msg":"Register DB  save member error, ","error":"sql: transaction has already been committed or rolled back"}
 {"level":"ERROR","time":"2024-08-04T20:27:35.236+0800","caller":"login.service.v1/login_service.go:89","msg":"Register DB error, ","error":"sql: transaction has already been committed or rolled back"}
 {"level":"INFO","time":"2024-08-04T20:29:53.697+0800","caller":"login.service.v1/login_service.go:53","msg":"短信平台调用成功，发送短信"}
+{"level":"INFO","time":"2024-08-05T15:47:13.938+0800","caller":"login.service.v1/login_service.go:54","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-08-05T15:47:26.612+0800","caller":"login.service.v1/login_service.go:158","msg":"Login DB error, ","error":"invalid value, should be pointer to struct or slice"}
+{"level":"INFO","time":"2024-08-05T17:23:57.039+0800","caller":"login.service.v1/login_service.go:57","msg":"短信平台调用成功，发送短信"}

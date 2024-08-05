@@ -1,0 +1,34 @@
+server:
+  name: "project-project"
+  Addr: "127.0.0.1:8081"
+zap:
+  debugFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-debug.log"
+  infoFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-info.log"
+  warnFileName: "E:\\Codes\\GoProjects\\ms_project\\logs\\debug\\project-error.log"
+  maxSize: 10
+  maxAge: 28
+  MaxBackups: 2
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+grpc:
+  name: "project"
+  addr: "127.0.0.1:8882"
+  version: "1.0.0"
+  weight: 2  # 和etcd负载均衡，backend的权重相关；
+etcd:
+  Addrs:
+    - "127.0.0.1:2379"
+mysql:
+  username: root
+  password: root
+  host: 127.0.0.1
+  port: 3309
+  db: msproject
+jwt:
+  accessExp: 7  # 天
+  refreshExp: 14
+  accessSecret: "msproject"
+  refreshSecret: "msproject"

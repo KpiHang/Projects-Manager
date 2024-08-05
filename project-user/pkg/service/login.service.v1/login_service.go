@@ -4,12 +4,16 @@ import (
 	"context"
 	"errors"
 	"github.com/go-redis/redis/v8"
+	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
 	"log"
+	"strconv"
 	common "test.com/project-common"
 	"test.com/project-common/encrypts"
 	"test.com/project-common/errs"
+	"test.com/project-common/jwts"
 	"test.com/project-grpc/user/login"
+	"test.com/project-user/config"
 	"test.com/project-user/internal/dao"
 	"test.com/project-user/internal/data/member"
 	"test.com/project-user/internal/data/organization"
@@ -21,20 +25,20 @@ import (
 )
 
 type LoginService struct {
-	login.UnimplementedLoginServiceServer
-	cache            repo.Cache
-	memberRepo       repo.MemberRepo
-	organizationRepo repo.OrganizationRepo
-	transaction      tran.Transaction // 事务操作接口
+	login.UnimplementedLoginServiceServer                       // grpc 里的
+	cache                                 repo.Cache            // repo里定义接口
+	memberRepo                            repo.MemberRepo       // repo里定义接口
+	organizationRepo                      repo.OrganizationRepo // repo里定义接口
+	transaction                           tran.Transaction      // 事务操作接口
 }
 
 // NewLoginService 因为catche字段是接口，构造一下把链接redis后的cache放进来；
 func NewLoginService() *LoginService {
 	return &LoginService{
-		cache:            dao.Rc,
-		memberRepo:       dao.NewMemberDao(),
-		organizationRepo: dao.NewOrganizationDao(),
-		transaction:      dao.NewTransactionImpl(),
+		cache:            dao.Rc,                   // dao中实现接口，按照repo接口规则和数据库交互
+		memberRepo:       dao.NewMemberDao(),       // dao中实现接口，按照repo接口规则和数据库交互
+		organizationRepo: dao.NewOrganizationDao(), // dao中实现接口，按照repo接口规则和数据库交互
+		transaction:      dao.NewTransactionImpl(), // dao中实现接口，按照repo接口规则和数据库交互
 	}
 }
 
@@ -146,4 +150,61 @@ func (ls *LoginService) Register(ctx context.Context, msg *login.RegisterMessage
 
 	// 5. 返回响应
 	return &login.RegisterResponse{}, err
+}
+
+func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*login.LoginResponse, error) {
+	c := context.Background()
+	// 1. 去数据库查询，账号密码是否正确；
+	pwd := encrypts.Md5(msg.Password)
+	mem, err := ls.memberRepo.FindMember(c, msg.Account, pwd)
+	if err != nil {
+		zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
+	// todo: 如果查询为空，mem 并不是是nil，而是一个零值 &member.Member{}
+	if mem == nil {
+		return nil, errs.GrpcError(model.AccountOrPwdError)
+	}
+	memMessage := &login.MemberMessage{} // grpc服务的响应实体（之一）
+	err = copier.Copy(memMessage, mem)
+	memMessage.Code, _ = encrypts.EncryptInt64(mem.Id, model.AESKey) // 加密id
+	// 2. 根据用户id 查组织；
+	orgs, err := ls.organizationRepo.FindOrganizationByMemberId(c, mem.Id)
+	if err != nil {
+		zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误，
+		return nil, errs.GrpcError(model.DBError)
+	}
+
+	var orgsMessage []*login.OrganizationMessage // grpc服务的响应实体（之一）
+	err = copier.Copy(&orgsMessage, orgs)
+	for _, org := range orgsMessage {
+		org.Code, _ = encrypts.EncryptInt64(org.Id, model.AESKey) // 加密组织的id
+	}
+
+	// 3. 用jwt生成token
+	memIdStr := strconv.FormatInt(mem.Id, 10)
+	exp := time.Duration(config.Conf.JwtConfig.AccessExp*3600*24) * time.Second
+	rexp := time.Duration(config.Conf.JwtConfig.RefreshExp*3600*24) * time.Second
+
+	token := jwts.CreateToken(
+		memIdStr,
+		exp,
+		config.Conf.JwtConfig.AccessSecret,
+		rexp,
+		config.Conf.JwtConfig.RefreshSecret,
+	)
+
+	tokenList := &login.TokenMessage{
+		AccessToken:    token.AccessToken,
+		RefreshToken:   token.RefreshToken,
+		AccessTokenExp: token.AccessExp,
+		TokenType:      "bearer",
+	}
+
+	// 4. 返回响应
+	return &login.LoginResponse{
+		Member:           memMessage,
+		OrganizationList: orgsMessage,
+		TokenList:        tokenList,
+	}, nil
 }

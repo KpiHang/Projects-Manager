@@ -71,3 +71,37 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 	// 4. 返回响应
 	ctx.JSON(http.StatusOK, gatewayResponse.Success("")) // 由api网关响应给客户端
 }
+
+func (h *HandlerUser) Login(ctx *gin.Context) {
+	// 1. 接收参数；需要有一个参数的模型（结构体、Model）
+	// 2. 调用user grpc 完成登陆
+	// 3. 返回响应
+
+	gatewayResponse := &common.Result{}
+	// 1. 接收参数；需要有一个参数的模型（结构体、Model）
+	var req user.LoginReq
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "参数格式有误"))
+		return
+	}
+	// 2. 调用user grpc 完成登陆
+	c, cancle := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancle()
+	msg := &login.LoginMessage{}
+	err = copier.Copy(msg, req)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "copy 参数格式有误"))
+		return
+	}
+	loginRsp, err := LoginServiceClient.Login(c, msg) // 在user 模块中写注册相关的grpc服务；
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err) // grpc 服务返回的code msg
+		ctx.JSON(http.StatusOK, gatewayResponse.Fail(code, msg))
+		return
+	}
+	rsp := &user.LoginRsp{}
+	err = copier.Copy(rsp, loginRsp)
+	// 3. 返回响应
+	ctx.JSON(http.StatusOK, gatewayResponse.Success(rsp)) // 由api网关响应给客户端
+}

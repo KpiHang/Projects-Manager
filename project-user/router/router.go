@@ -65,6 +65,7 @@ func RegisterGrpc() *grpc.Server {
 	}
 
 	go func() { // 放到协程里，看main，如果不放到协程里，main无法向下执行了；
+		log.Printf("grpc server started as: %s \n", c.Addr)
 		err = s.Serve(lis) // s.Serve(lis) 会阻塞当前 goroutine，开始接受并处理客户端请求。
 		if err != nil {
 			log.Fatalln("failed to serve:", err)

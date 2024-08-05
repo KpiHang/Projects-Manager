@@ -20,4 +20,5 @@ func (*RouterUser) Register(r *gin.Engine) {
 	h := NewHandlerUser()
 	r.POST("/project/login/getCaptcha", h.getCaptcha)
 	r.POST("/project/login/register", h.Register)
+	r.POST("/project/login", h.Login)
 }

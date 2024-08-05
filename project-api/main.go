@@ -6,6 +6,7 @@ import (
 	"test.com/project-api/router"
 	srv "test.com/project-common"
 
+	_ "test.com/project-api/api/project"
 	_ "test.com/project-api/api/user"
 )
 
