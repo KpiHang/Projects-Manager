@@ -8,4 +8,4 @@
 ![](./assets/register.png)
 
 **HomePage**
-![](./assets/main.png)
+![](./assets/homepage.png)

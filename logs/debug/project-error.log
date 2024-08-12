@@ -8,3 +8,11 @@
 {"level":"ERROR","time":"2024-08-04T20:13:14.673+0800","caller":"login.service.v1/login_service.go:128","msg":"Register DB  save member error, ","error":"sql: transaction has already been committed or rolled back"}
 {"level":"ERROR","time":"2024-08-04T20:27:35.236+0800","caller":"login.service.v1/login_service.go:89","msg":"Register DB error, ","error":"sql: transaction has already been committed or rolled back"}
 {"level":"ERROR","time":"2024-08-05T15:47:26.612+0800","caller":"login.service.v1/login_service.go:158","msg":"Login DB error, ","error":"invalid value, should be pointer to struct or slice"}
+{"level":"ERROR","time":"2024-08-06T15:11:47.311+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"token contains an invalid number of segments"}
+{"level":"ERROR","time":"2024-08-06T15:11:59.562+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"token contains an invalid number of segments"}
+{"level":"ERROR","time":"2024-08-06T15:15:55.648+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-06T15:17:00.541+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-06T15:17:19.068+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-06T15:17:21.378+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-12T16:14:37.865+0800","caller":"project.service.v1/project_service.go:54","msg":"project FindProjectByMemId DB error, ","error":"context canceled"}
+{"level":"ERROR","time":"2024-08-12T16:14:37.866+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}

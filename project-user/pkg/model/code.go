@@ -11,6 +11,7 @@ import (
 var (
 	RedisError = errs.NewError(999, "redis 错误")
 	DBError    = errs.NewError(998, "DB 错误")
+	NoLogin    = errs.NewError(997, "未登陆")
 
 	NoLegalMobile     = errs.NewError(10102001, "手机号不合法") // 10 user模块 10 登录相关
 	CaptchaNotExist   = errs.NewError(10102002, "验证码不存在，或者已过期")

@@ -3,6 +3,7 @@ package project
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"test.com/project-api/api/midd"
 	"test.com/project-api/router"
 )
 
@@ -18,5 +19,11 @@ func (*RouterProject) Register(r *gin.Engine) {
 	// 初始化grpc客户端的连接，链接user service server，在rpc.go中完成；
 	InitRpcProjectClient()
 	h := NewHandlerProject()
-	r.POST("/project/index", h.index)
+	group := r.Group("/project/index")
+	group.Use(midd.TokenVerify()) // 这个组用中间件；
+	group.POST("", h.index)
+
+	group1 := r.Group("/project/project")
+	group1.Use(midd.TokenVerify())
+	group1.POST("/selfList", h.myProjectList)
 }

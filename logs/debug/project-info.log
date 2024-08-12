@@ -23,3 +23,11 @@
 {"level":"INFO","time":"2024-08-05T15:47:13.938+0800","caller":"login.service.v1/login_service.go:54","msg":"短信平台调用成功，发送短信"}
 {"level":"ERROR","time":"2024-08-05T15:47:26.612+0800","caller":"login.service.v1/login_service.go:158","msg":"Login DB error, ","error":"invalid value, should be pointer to struct or slice"}
 {"level":"INFO","time":"2024-08-05T17:23:57.039+0800","caller":"login.service.v1/login_service.go:57","msg":"短信平台调用成功，发送短信"}
+{"level":"ERROR","time":"2024-08-06T15:11:47.311+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"token contains an invalid number of segments"}
+{"level":"ERROR","time":"2024-08-06T15:11:59.562+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"token contains an invalid number of segments"}
+{"level":"ERROR","time":"2024-08-06T15:15:55.648+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-06T15:17:00.541+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-06T15:17:19.068+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-06T15:17:21.378+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
+{"level":"ERROR","time":"2024-08-12T16:14:37.865+0800","caller":"project.service.v1/project_service.go:54","msg":"project FindProjectByMemId DB error, ","error":"context canceled"}
+{"level":"ERROR","time":"2024-08-12T16:14:37.866+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}

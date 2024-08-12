@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"strconv"
+	"strings"
 	common "test.com/project-common"
 	"test.com/project-common/encrypts"
 	"test.com/project-common/errs"
@@ -207,4 +208,44 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 		OrganizationList: orgsMessage,
 		TokenList:        tokenList,
 	}, nil
+}
+
+func (ls *LoginService) TokenVerify(ctx context.Context, msg *login.LoginMessage) (*login.LoginResponse, error) {
+	token := msg.Token
+	if strings.Contains(token, "bearer") {
+		token = strings.ReplaceAll(token, "bearer ", "") // 前端传过来的token 前面带了 bearer ;
+	}
+	parseToken, err := jwts.ParseToken(token, config.Conf.JwtConfig.AccessSecret)
+	if err != nil {
+		zap.L().Error("TokenVerify ParseToken err", zap.Error(err))
+		return nil, errs.GrpcError(model.NoLogin)
+	}
+
+	// 数据库查询，优化点（todo），登陆之后应该把用户信息缓存起来；
+	id, _ := strconv.ParseInt(parseToken, 10, 64)
+	memberById, err := ls.memberRepo.FindMemberById(context.Background(), id)
+	if err != nil {
+		zap.L().Error("TokenVerify FindMemberById DB error, ", zap.Error(err)) // 非业务错误，
+		return nil, errs.GrpcError(model.DBError)
+	}
+	memMessage := &login.MemberMessage{} // grpc服务的响应实体（之一）
+	copier.Copy(memMessage, memberById)
+	memMessage.Code, _ = encrypts.EncryptInt64(memberById.Id, model.AESKey) // 加密id
+
+	return &login.LoginResponse{Member: memMessage}, nil
+}
+
+func (l *LoginService) MyOrgList(ctx context.Context, msg *login.UserMessage) (*login.OrgListResponse, error) {
+	memId := msg.MemId
+	orgs, err := l.organizationRepo.FindOrganizationByMemberId(ctx, memId)
+	if err != nil {
+		zap.L().Error("MyOrgList FindOrganizationByMemId err", zap.Error(err))
+		return nil, errs.GrpcError(model.DBError)
+	}
+	var orgsMessage []*login.OrganizationMessage
+	err = copier.Copy(&orgsMessage, orgs)
+	for _, org := range orgsMessage {
+		org.Code, _ = encrypts.EncryptInt64(org.Id, model.AESKey)
+	}
+	return &login.OrgListResponse{OrganizationList: orgsMessage}, nil
 }

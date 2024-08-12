@@ -27,6 +27,8 @@ type LoginServiceClient interface {
 	GetCaptcha(ctx context.Context, in *CaptchaMessage, opts ...grpc.CallOption) (*CaptchaResponse, error)
 	Register(ctx context.Context, in *RegisterMessage, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginMessage, opts ...grpc.CallOption) (*LoginResponse, error)
+	TokenVerify(ctx context.Context, in *LoginMessage, opts ...grpc.CallOption) (*LoginResponse, error)
+	MyOrgList(ctx context.Context, in *UserMessage, opts ...grpc.CallOption) (*OrgListResponse, error)
 }
 
 type loginServiceClient struct {
@@ -64,6 +66,24 @@ func (c *loginServiceClient) Login(ctx context.Context, in *LoginMessage, opts .
 	return out, nil
 }
 
+func (c *loginServiceClient) TokenVerify(ctx context.Context, in *LoginMessage, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/login.service.v1.LoginService/TokenVerify", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *loginServiceClient) MyOrgList(ctx context.Context, in *UserMessage, opts ...grpc.CallOption) (*OrgListResponse, error) {
+	out := new(OrgListResponse)
+	err := c.cc.Invoke(ctx, "/login.service.v1.LoginService/MyOrgList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LoginServiceServer is the server API for LoginService service.
 // All implementations must embed UnimplementedLoginServiceServer
 // for forward compatibility
@@ -73,6 +93,8 @@ type LoginServiceServer interface {
 	GetCaptcha(context.Context, *CaptchaMessage) (*CaptchaResponse, error)
 	Register(context.Context, *RegisterMessage) (*RegisterResponse, error)
 	Login(context.Context, *LoginMessage) (*LoginResponse, error)
+	TokenVerify(context.Context, *LoginMessage) (*LoginResponse, error)
+	MyOrgList(context.Context, *UserMessage) (*OrgListResponse, error)
 	mustEmbedUnimplementedLoginServiceServer()
 }
 
@@ -88,6 +110,12 @@ func (UnimplementedLoginServiceServer) Register(context.Context, *RegisterMessag
 }
 func (UnimplementedLoginServiceServer) Login(context.Context, *LoginMessage) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedLoginServiceServer) TokenVerify(context.Context, *LoginMessage) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TokenVerify not implemented")
+}
+func (UnimplementedLoginServiceServer) MyOrgList(context.Context, *UserMessage) (*OrgListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MyOrgList not implemented")
 }
 func (UnimplementedLoginServiceServer) mustEmbedUnimplementedLoginServiceServer() {}
 
@@ -156,6 +184,42 @@ func _LoginService_Login_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LoginService_TokenVerify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LoginServiceServer).TokenVerify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/login.service.v1.LoginService/TokenVerify",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LoginServiceServer).TokenVerify(ctx, req.(*LoginMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LoginService_MyOrgList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LoginServiceServer).MyOrgList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/login.service.v1.LoginService/MyOrgList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LoginServiceServer).MyOrgList(ctx, req.(*UserMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LoginService_ServiceDesc is the grpc.ServiceDesc for LoginService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -174,6 +238,14 @@ var LoginService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _LoginService_Login_Handler,
+		},
+		{
+			MethodName: "TokenVerify",
+			Handler:    _LoginService_TokenVerify_Handler,
+		},
+		{
+			MethodName: "MyOrgList",
+			Handler:    _LoginService_MyOrgList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

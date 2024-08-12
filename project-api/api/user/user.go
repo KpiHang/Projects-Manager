@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"net/http"
+	"test.com/project-api/api/rpc"
 	"test.com/project-api/pkg/model/user"
 	common "test.com/project-common"
 	"test.com/project-common/errs"
@@ -25,7 +26,7 @@ func (h *HandlerUser) getCaptcha(ctx *gin.Context) {
 	mobile := ctx.PostForm("mobile") // 客户端给API发请求，携带mobile参数；
 	c, cancle := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancle() // ↓ rpc 调用user service server
-	captchaRsp, err := LoginServiceClient.GetCaptcha(c, &login.CaptchaMessage{Mobile: mobile})
+	captchaRsp, err := rpc.LoginServiceClient.GetCaptcha(c, &login.CaptchaMessage{Mobile: mobile})
 	if err != nil {
 		code, msg := errs.ParseGrpcError(err)
 		ctx.JSON(http.StatusOK, result.Fail(code, msg))
@@ -62,7 +63,7 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "copy 参数格式有误"))
 		return
 	}
-	_, err = LoginServiceClient.Register(c, msg) // 在user 模块中写注册相关的grpc服务；
+	_, err = rpc.LoginServiceClient.Register(c, msg) // 在user 模块中写注册相关的grpc服务；
 	if err != nil {
 		code, msg := errs.ParseGrpcError(err) // grpc 服务返回的code msg
 		ctx.JSON(http.StatusOK, gatewayResponse.Fail(code, msg))
@@ -94,7 +95,7 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "copy 参数格式有误"))
 		return
 	}
-	loginRsp, err := LoginServiceClient.Login(c, msg) // 在user 模块中写注册相关的grpc服务；
+	loginRsp, err := rpc.LoginServiceClient.Login(c, msg) // 在user 模块中写注册相关的grpc服务；
 	if err != nil {
 		code, msg := errs.ParseGrpcError(err) // grpc 服务返回的code msg
 		ctx.JSON(http.StatusOK, gatewayResponse.Fail(code, msg))
@@ -104,4 +105,24 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 	err = copier.Copy(rsp, loginRsp)
 	// 3. 返回响应
 	ctx.JSON(http.StatusOK, gatewayResponse.Success(rsp)) // 由api网关响应给客户端
+}
+
+func (h *HandlerUser) myOrgList(c *gin.Context) {
+	result := &common.Result{}
+	memberIdStr, _ := c.Get("memberId")
+	memberId := memberIdStr.(int64)
+	list, err2 := rpc.LoginServiceClient.MyOrgList(context.Background(), &login.UserMessage{MemId: memberId})
+
+	if err2 != nil {
+		code, msg := errs.ParseGrpcError(err2)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+		return
+	}
+	if list.OrganizationList == nil {
+		c.JSON(http.StatusOK, result.Success([]*user.OrganizationList{}))
+		return
+	}
+	var orgs []*user.OrganizationList
+	copier.Copy(&orgs, list.OrganizationList)
+	c.JSON(http.StatusOK, result.Success(orgs))
 }
