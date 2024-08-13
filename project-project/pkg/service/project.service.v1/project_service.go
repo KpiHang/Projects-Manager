@@ -6,9 +6,11 @@ import (
 	"go.uber.org/zap"
 	"test.com/project-common/encrypts"
 	"test.com/project-common/errs"
+	"test.com/project-common/tms"
 	"test.com/project-grpc/project"
 	"test.com/project-project/internal/dao"
 	"test.com/project-project/internal/data/menu"
+	"test.com/project-project/internal/data/pro"
 	"test.com/project-project/internal/database/tran"
 	"test.com/project-project/internal/repo"
 	"test.com/project-project/pkg/model"
@@ -62,6 +64,13 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 	copier.Copy(&pmm, pms)
 	for _, v := range pmm {
 		v.Code, _ = encrypts.EncryptInt64(v.Id, model.AESKey)
+		pam := pro.ToMap(pms)[v.Id]
+		v.AccessControlType = pam.GetAccessControlType()
+		v.OrganizationCode, _ = encrypts.EncryptInt64(pam.OrganizationCode, model.AESKey)
+		v.JoinTime = tms.FormatByMill(pam.JoinTime)
+		v.OwnerName = msg.MemberName
+		v.Order = int32(pam.Sort)
+		v.CreateTime = tms.FormatByMill(pam.CreateTime)
 	}
 	return &project.MyProjectResponse{Pm: pmm, Total: total}, nil
 }

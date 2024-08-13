@@ -13,6 +13,7 @@ import (
 	"test.com/project-common/encrypts"
 	"test.com/project-common/errs"
 	"test.com/project-common/jwts"
+	"test.com/project-common/tms"
 	"test.com/project-grpc/user/login"
 	"test.com/project-user/config"
 	"test.com/project-user/internal/dao"
@@ -169,6 +170,8 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 	memMessage := &login.MemberMessage{} // grpc服务的响应实体（之一）
 	err = copier.Copy(memMessage, mem)
 	memMessage.Code, _ = encrypts.EncryptInt64(mem.Id, model.AESKey) // 加密id
+	memMessage.LastLoginTime = tms.FormatByMill(mem.LastLoginTime)
+	memMessage.CreateTime = tms.FormatByMill(mem.CreateTime)
 	// 2. 根据用户id 查组织；
 	orgs, err := ls.organizationRepo.FindOrganizationByMemberId(c, mem.Id)
 	if err != nil {
@@ -180,6 +183,8 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 	err = copier.Copy(&orgsMessage, orgs)
 	for _, org := range orgsMessage {
 		org.Code, _ = encrypts.EncryptInt64(org.Id, model.AESKey) // 加密组织的id
+		org.OwnerCode = memMessage.Code
+		org.CreateTime = tms.FormatByMill(organization.ToMap(orgs)[org.Id].CreateTime)
 	}
 
 	// 3. 用jwt生成token
