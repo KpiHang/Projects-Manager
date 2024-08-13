@@ -5,8 +5,6 @@ import (
 	srv "test.com/project-common"
 	"test.com/project-user/config"
 	"test.com/project-user/router"
-
-	_ "test.com/project-user/api/user" // 这可以不用要；
 )
 
 func main() {

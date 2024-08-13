@@ -49,9 +49,29 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 	memberId := msg.MemberId
 	page := msg.Page
 	pageSize := msg.PageSize
+	var (
+		pms   []*pro.ProjectAndMember
+		total int64
+		err   error
+	)
 
-	// 要从数据库中query了，就调一个repo；
-	pms, total, err := p.projectRepo.FindProjectByMemId(ctx, memberId, page, pageSize)
+	if msg.SelectBy == "" || msg.SelectBy == "my" {
+		// 要从数据库中query了，就调一个repo；
+		pms, total, err = p.projectRepo.FindProjectByMemId(ctx, memberId, "", page, pageSize)
+	}
+
+	if msg.SelectBy == "archive" {
+		pms, total, err = p.projectRepo.FindProjectByMemId(ctx, memberId, "and archive = 1", page, pageSize)
+	}
+
+	if msg.SelectBy == "deleted" {
+		pms, total, err = p.projectRepo.FindProjectByMemId(ctx, memberId, "and deleted = 1", page, pageSize)
+	}
+
+	if msg.SelectBy == "collect" { // 用到用户项目收藏表了，用新的方法。
+		pms, total, err = p.projectRepo.FindCollectProjectByMemId(ctx, memberId, page, pageSize)
+	}
+
 	if err != nil {
 		zap.L().Error("project FindProjectByMemId DB error, ", zap.Error(err)) // 非业务错误；
 		return nil, errs.GrpcError(model.DBError)

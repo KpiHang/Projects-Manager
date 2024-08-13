@@ -25,5 +25,6 @@ func (*RouterProject) Register(r *gin.Engine) {
 
 	group1 := r.Group("/project/project")
 	group1.Use(midd.TokenVerify())
-	group1.POST("/selfList", h.myProjectList)
+	group1.POST("/selfList", h.myProjectList) // 用id获取我的项目list
+	group1.POST("", h.myProjectList)          // 用id获取 select对应类型的项目list  (表单多传一个selectBy)
 }

@@ -47,3 +47,31 @@
 {"level":"ERROR","time":"2024-08-06T15:17:21.378+0800","caller":"login.service.v1/login_service.go:216","msg":"TokenVerify ParseToken err","error":"tokenstring should not contain 'bearer '"}
 {"level":"ERROR","time":"2024-08-12T16:14:37.865+0800","caller":"project.service.v1/project_service.go:54","msg":"project FindProjectByMemId DB error, ","error":"context canceled"}
 {"level":"ERROR","time":"2024-08-12T16:14:37.866+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T16:58:16.488+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T16:58:35.621+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T16:58:37.895+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1054 (42S22): Unknown column 'deleted' in 'where clause'"}
+{"level":"ERROR","time":"2024-08-13T16:58:39.564+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T16:58:40.540+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1054 (42S22): Unknown column 'deleted' in 'where clause'"}
+{"level":"ERROR","time":"2024-08-13T16:59:03.562+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:02:42.982+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:04:26.869+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:04:50.776+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:06:21.466+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:12:48.487+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:17:08.364+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:17:08.364+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:17:43.883+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:17:53.905+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1054 (42S22): Unknown column 'deleted' in 'where clause'"}
+{"level":"ERROR","time":"2024-08-13T17:21:14.623+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:25:19.804+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:25:19.804+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:26:12.229+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:26:12.241+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"etcdserver: requested lease not found"}
+{"level":"ERROR","time":"2024-08-13T17:32:31.328+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:34:20.133+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:33:03.760+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:34:22.593+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:34:34.459+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:34:49.265+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
+{"level":"ERROR","time":"2024-08-13T17:37:37.850+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-13T17:37:37.850+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}

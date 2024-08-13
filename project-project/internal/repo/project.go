@@ -7,5 +7,6 @@ import (
 
 type ProjectRepo interface {
 	// FindProjectByMemId 返回projects, 项目总数，err
-	FindProjectByMemId(ctx context.Context, memId int64, page int64, pageSize int64) ([]*pro.ProjectAndMember, int64, error)
+	FindProjectByMemId(ctx context.Context, memId int64, condition string, page int64, pageSize int64) ([]*pro.ProjectAndMember, int64, error)
+	FindCollectProjectByMemId(ctx context.Context, memId int64, page int64, pageSize int64) ([]*pro.ProjectAndMember, int64, error)
 }

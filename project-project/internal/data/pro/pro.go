@@ -73,3 +73,14 @@ func ToMap(orgs []*ProjectAndMember) map[int64]*ProjectAndMember {
 	}
 	return m
 }
+
+type ProjectCollection struct {
+	Id          int64
+	ProjectCode int64
+	MemberCode  int64
+	CreateTime  int64
+}
+
+func (*ProjectCollection) TableName() string {
+	return "ms_project_collection"
+}

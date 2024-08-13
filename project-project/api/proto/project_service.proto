@@ -73,6 +73,7 @@ message ProjectRpcMessage{  // 传参
   string memberName = 2;
   int64 page = 3;  // 分页信息；
   int64 pageSize = 4;  // 页size
+  string selectBy = 5;
 }
 
 message MyProjectResponse{  // 响应
