@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
+	"strconv"
 	"test.com/project-common/encrypts"
 	"test.com/project-common/errs"
 	"test.com/project-common/tms"
@@ -11,6 +12,7 @@ import (
 	"test.com/project-project/internal/dao"
 	"test.com/project-project/internal/data/menu"
 	"test.com/project-project/internal/data/pro"
+	"test.com/project-project/internal/data/task"
 	"test.com/project-project/internal/database/tran"
 	"test.com/project-project/internal/repo"
 	"test.com/project-project/pkg/model"
@@ -22,14 +24,18 @@ type ProjectService struct {
 	transaction                               tran.Transaction // 事务操作接口
 	menuRepo                                  repo.MenuRepo
 	projectRepo                               repo.ProjectRepo
+	projectTemplateRepo                       repo.ProjectTemplateRepo
+	taskStagesTemplateRepo                    repo.TaskStagesTemplateRepo
 }
 
 func NewProjectService() *ProjectService {
 	return &ProjectService{
-		cache:       dao.Rc,
-		transaction: dao.NewTransactionImpl(),
-		menuRepo:    dao.NewMenuDao(),
-		projectRepo: dao.NewProjectDao(),
+		cache:                  dao.Rc,
+		transaction:            dao.NewTransactionImpl(),
+		menuRepo:               dao.NewMenuDao(),
+		projectRepo:            dao.NewProjectDao(),
+		projectTemplateRepo:    dao.NewProjectTemplateDao(),
+		taskStagesTemplateRepo: dao.NewTaskStagesTemplateDao(),
 	}
 }
 
@@ -93,4 +99,52 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 		v.CreateTime = tms.FormatByMill(pam.CreateTime)
 	}
 	return &project.MyProjectResponse{Pm: pmm, Total: total}, nil
+}
+
+func (ps *ProjectService) FindProjectTemplate(ctx context.Context, msg *project.ProjectRpcMessage) (*project.ProjectTemplateResponse, error) {
+	// 1. 根据viewType 查询项目模版表；
+	// 2. 模型转换；拿到模版id列表，去任务步骤模版表，查询；
+	// 3. 组装数据，返回；
+
+	// 1. 根据viewType 查询项目模版表；
+	organizationCodeStr, _ := encrypts.Decrypt(msg.OrganizationCode, model.AESKey)
+	organizationCode, _ := strconv.ParseInt(organizationCodeStr, 10, 64)
+	page := msg.Page
+	pageSize := msg.PageSize
+
+	var pts []pro.ProjectTemplate
+	var total int64
+	var err error
+
+	if msg.ViewType == -1 { // 所有
+		pts, total, err = ps.projectTemplateRepo.FindProjectTemplateAll(ctx, organizationCode, page, pageSize)
+	}
+	if msg.ViewType == 0 { // 自定义模版
+		pts, total, err = ps.projectTemplateRepo.FindProjectTemplateCustom(ctx, msg.MemberId, organizationCode, page, pageSize)
+	}
+	if msg.ViewType == 1 { // 系统
+		pts, total, err = ps.projectTemplateRepo.FindProjectTemplateSystem(ctx, page, pageSize)
+	}
+
+	if err != nil {
+		zap.L().Error("project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
+	// 2. 模型转换；拿到模版id列表，去任务步骤模版表，查询模板包括的任务步骤；
+	tsts, err := ps.taskStagesTemplateRepo.FindInProTemIds(ctx, pro.ToProjectTemplateIds(pts))
+	if err != nil {
+		zap.L().Error("project FindProjectTemplate FindInProTemIds DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
+
+	var ptas []*pro.ProjectTemplateAll
+	for _, v := range pts {
+		// 写代码，该谁做的事情，一定要交出去；
+		ptas = append(ptas, v.Convert(task.CovertProjectMap(tsts)[v.Id]))
+	}
+
+	// 3. 组装数据，返回；
+	var pmMsgs []*project.ProjectTemplateMessage
+	copier.Copy(&pmMsgs, ptas)
+	return &project.ProjectTemplateResponse{Ptm: pmMsgs, Total: total}, nil
 }

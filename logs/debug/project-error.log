@@ -44,3 +44,6 @@
 {"level":"ERROR","time":"2024-08-13T17:34:49.265+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"Error 1305 (42000): FUNCTION msproject.s does not exist"}
 {"level":"ERROR","time":"2024-08-13T17:37:37.850+0800","caller":"project.service.v1/project_service.go:76","msg":"project FindProjectByMemId DB error, ","error":"context deadline exceeded"}
 {"level":"ERROR","time":"2024-08-13T17:37:37.850+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-14T21:09:29.201+0800","caller":"project.service.v1/project_service.go:130","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"unsupported data type: 0xc00036a148: Table not set, please set it like: db.Model(&user) or db.Table(\"users\")"}
+{"level":"ERROR","time":"2024-08-14T21:26:03.791+0800","caller":"project.service.v1/project_service.go:130","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-14T21:28:37.891+0800","caller":"project.service.v1/project_service.go:130","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"context deadline exceeded"}

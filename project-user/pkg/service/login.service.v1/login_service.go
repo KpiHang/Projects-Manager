@@ -186,7 +186,9 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 		org.OwnerCode = memMessage.Code
 		org.CreateTime = tms.FormatByMill(organization.ToMap(orgs)[org.Id].CreateTime)
 	}
-
+	if len(orgs) > 0 {
+		memMessage.OrganizationCode, _ = encrypts.EncryptInt64(orgs[0].Id, model.AESKey) // 对外展示，所以要加密；
+	}
 	// 3. 用jwt生成token
 	memIdStr := strconv.FormatInt(mem.Id, 10)
 	exp := time.Duration(config.Conf.JwtConfig.AccessExp*3600*24) * time.Second
@@ -207,7 +209,7 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 		TokenType:      "bearer",
 	}
 
-	// 4. 返回响应
+	// 4. 返回响应  todo:member orgs 放入缓存
 	return &login.LoginResponse{
 		Member:           memMessage,
 		OrganizationList: orgsMessage,
@@ -236,6 +238,16 @@ func (ls *LoginService) TokenVerify(ctx context.Context, msg *login.LoginMessage
 	memMessage := &login.MemberMessage{} // grpc服务的响应实体（之一）
 	copier.Copy(memMessage, memberById)
 	memMessage.Code, _ = encrypts.EncryptInt64(memberById.Id, model.AESKey) // 加密id
+
+	// 根据用户id 查组织；todo：可以从缓存中获取ogrg，如果没有直接返回认证失败；
+	orgs, err := ls.organizationRepo.FindOrganizationByMemberId(context.Background(), memberById.Id)
+	if err != nil {
+		zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误，
+		return nil, errs.GrpcError(model.DBError)
+	}
+	if len(orgs) > 0 {
+		memMessage.OrganizationCode, _ = encrypts.EncryptInt64(orgs[0].Id, model.AESKey) // 对外展示，所以要加密；
+	}
 
 	return &login.LoginResponse{Member: memMessage}, nil
 }

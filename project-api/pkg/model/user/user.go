@@ -75,7 +75,3 @@ type OrganizationList struct {
 	Area        int32  `json:"area"`
 	Code        string `json:"code"` // AES加密的id
 }
-
-type Code struct {
-	Code int64 `json:"code"`
-}

@@ -19,12 +19,10 @@ func (*RouterProject) Register(r *gin.Engine) {
 	// 初始化grpc客户端的连接，链接user service server，在rpc.go中完成；
 	InitRpcProjectClient()
 	h := NewHandlerProject()
-	group := r.Group("/project/index")
+	group := r.Group("/project")
 	group.Use(midd.TokenVerify()) // 这个组用中间件；
-	group.POST("", h.index)
-
-	group1 := r.Group("/project/project")
-	group1.Use(midd.TokenVerify())
-	group1.POST("/selfList", h.myProjectList) // 用id获取我的项目list
-	group1.POST("", h.myProjectList)          // 用id获取 select对应类型的项目list  (表单多传一个selectBy)
+	group.POST("/index", h.index)
+	group.POST("/project/selfList", h.myProjectList) // 用id获取我的项目list
+	group.POST("/project", h.myProjectList)          // 用id获取 select对应类型的项目list  (表单多传一个selectBy)
+	group.POST("/project_template", h.projectTemplate)
 }

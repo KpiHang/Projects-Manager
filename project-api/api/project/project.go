@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"net/http"
+	"strconv"
 	"test.com/project-api/pkg/model"
 	"test.com/project-api/pkg/model/menu"
 	"test.com/project-api/pkg/model/pro"
@@ -69,5 +70,47 @@ func (p HandlerProject) myProjectList(c *gin.Context) {
 	c.JSON(http.StatusOK, result.Success(gin.H{
 		"list":  pms, // 返回切片的时候，如果为空一定不能返回 nil，（导致前端报错），而是返回 []
 		"total": myProjectResponse.Total,
+	}))
+}
+
+func (p HandlerProject) projectTemplate(c *gin.Context) {
+	result := &common.Result{}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	// 1. 获取参数；
+	memberId := c.GetInt64("memberId") // 自定义中间件放进去的
+	memberName := c.GetString("memberName")
+	page := &model.Page{}
+	page.Bind(c) // 绑定页号和页size
+	viewTypeStr := c.PostForm("viewType")
+	viewType, _ := strconv.ParseInt(viewTypeStr, 10, 64)
+	msg := &project.ProjectRpcMessage{
+		MemberId:         memberId,
+		MemberName:       memberName,
+		ViewType:         int32(viewType),
+		Page:             page.Page,
+		PageSize:         page.PageSize,
+		OrganizationCode: c.GetString("organizationCode")}
+	templateResponse, err := ProjectServiceClient.FindProjectTemplate(ctx, msg)
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+
+	var pms []*pro.ProjectTemplate
+	copier.Copy(&pms, templateResponse.Ptm)
+	if pms == nil {
+		pms = []*pro.ProjectTemplate{}
+	}
+
+	for _, v := range pms {
+		if v.TaskStages == nil { // 因为TaskStages也是列表，所有返回不能为nil 而是 []
+			v.TaskStages = []*pro.TaskStagesOnlyName{}
+		}
+	}
+
+	c.JSON(http.StatusOK, result.Success(gin.H{
+		"list":  pms, // 返回切片的时候，如果为空一定不能返回 nil，（导致前端报错），而是返回 []
+		"total": templateResponse.Total,
 	}))
 }
