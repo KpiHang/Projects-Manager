@@ -13,9 +13,11 @@ import (
 	"test.com/project-project/internal/data/menu"
 	"test.com/project-project/internal/data/pro"
 	"test.com/project-project/internal/data/task"
+	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/database/tran"
 	"test.com/project-project/internal/repo"
 	"test.com/project-project/pkg/model"
+	"time"
 )
 
 type ProjectService struct {
@@ -89,7 +91,7 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 	var pmm []*project.ProjectMessage
 	copier.Copy(&pmm, pms)
 	for _, v := range pmm {
-		v.Code, _ = encrypts.EncryptInt64(v.Id, model.AESKey)
+		v.Code, _ = encrypts.EncryptInt64(v.ProjectCode, model.AESKey)
 		pam := pro.ToMap(pms)[v.Id]
 		v.AccessControlType = pam.GetAccessControlType()
 		v.OrganizationCode, _ = encrypts.EncryptInt64(pam.OrganizationCode, model.AESKey)
@@ -147,4 +149,101 @@ func (ps *ProjectService) FindProjectTemplate(ctx context.Context, msg *project.
 	var pmMsgs []*project.ProjectTemplateMessage
 	copier.Copy(&pmMsgs, ptas)
 	return &project.ProjectTemplateResponse{Ptm: pmMsgs, Total: total}, nil
+}
+
+func (ps *ProjectService) SaveProject(ctx context.Context, msg *project.ProjectRpcMessage) (*project.SaveProjectMessage, error) {
+	// 1. 保存项目表；
+	// 2. 保存项目和成员的关联表
+	organizationCodeStr, _ := encrypts.Decrypt(msg.OrganizationCode, model.AESKey)
+	organizationCode, _ := strconv.ParseInt(organizationCodeStr, 10, 64)
+	templateCodeStr, _ := encrypts.Decrypt(msg.TemplateCode, model.AESKey)
+	templateCode, _ := strconv.ParseInt(templateCodeStr, 10, 64)
+
+	pr := &pro.Project{
+		Name:              msg.Name,
+		Description:       msg.Description,
+		TemplateCode:      int(templateCode),
+		CreateTime:        time.Now().UnixMilli(),
+		Cover:             "https://img2.baidu.com/it/u=792555388,2449797505&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500",
+		Deleted:           model.NoDeleted,
+		Archive:           model.NoArchive,
+		OrganizationCode:  organizationCode,
+		AccessControlType: model.Open,
+		TaskBoardTheme:    model.Simple,
+	}
+	err := ps.transaction.Action(func(conn database.DbConn) error { // 涉及多张表的保存，事务
+		// 1. 保存项目表；
+		err := ps.projectRepo.SaveProject(conn, ctx, pr)
+		if err != nil {
+			zap.L().Error("project SaveProject SaveProject DB error, ", zap.Error(err)) // 非业务错误；
+			return errs.GrpcError(model.DBError)
+		}
+
+		// 2. 保存项目和成员的关联表
+		pm := &pro.ProjectMember{
+			ProjectCode: pr.Id,
+			MemberCode:  msg.MemberId,
+			JoinTime:    time.Now().UnixMilli(),
+			IsOwner:     msg.MemberId,
+			Authorize:   "",
+		}
+		err = ps.projectRepo.SaveProjectMember(conn, ctx, pm)
+		if err != nil {
+			zap.L().Error("project SaveProject SaveProject DB error, ", zap.Error(err)) // 非业务错误；
+			return errs.GrpcError(model.DBError)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	code, _ := encrypts.EncryptInt64(pr.Id, model.AESKey)
+	rsp := &project.SaveProjectMessage{
+		Id:               pr.Id,
+		Code:             code,
+		OrganizationCode: organizationCodeStr,
+		Name:             pr.Name,
+		Cover:            pr.Cover,
+		CreateTime:       tms.FormatByMill(pr.CreateTime),
+		TaskBoardTheme:   pr.TaskBoardTheme,
+	}
+	return rsp, nil
+}
+
+func (ps *ProjectService) FindProjectDetail(ctx context.Context, msg *project.ProjectRpcMessage) (*project.ProjectDetailMessage, error) {
+	// 1. 查项目表
+	// 2. 查项目和成员的关联表，查到项目的拥有者，去member查表名；
+	// 3. 查收藏表，判断收藏状态；
+
+	// 1. 查项目表
+	projectCodeStr, _ := encrypts.Decrypt(msg.ProjectCode, model.AESKey)
+	projectCode, _ := strconv.ParseInt(projectCodeStr, 10, 64)
+	memberId := msg.MemberId
+	c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	projectAndMember, err := ps.projectRepo.FindProjectByPIdAndMemId(c, projectCode, memberId)
+	if err != nil {
+		zap.L().Error("project FindProjectDetail FindProjectByPIdAndMemId DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
+	// 2. 查项目和成员的关联表，查到项目的拥有者，去member查表名；
+	// ownerId := projectAndMember.IsOwner
+	//todo: 去 user 模块查找member表中的 username
+	// TODO: 优化，收藏的时候，可以放入redis
+	isCollect, err := ps.projectRepo.FindCollectByPidAndMemId(c, projectCode, memberId)
+	if err != nil {
+		zap.L().Error("project FindProjectDetail FindCollectByPidAndMemId DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
+	// 3. 查收藏表，判断收藏状态；
+	if isCollect {
+		projectAndMember.Collected = model.Collected
+	}
+
+	var detailMsg = &project.ProjectDetailMessage{}
+	copier.Copy(detailMsg, projectAndMember)
+	detailMsg.OwnerAvatar = "https://img2.baidu.com/it/u=792555388,2449797505&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500" // 项目owner的头像
+
+	return detailMsg, nil
 }

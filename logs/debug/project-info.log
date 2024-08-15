@@ -62,3 +62,12 @@
 {"level":"ERROR","time":"2024-08-14T21:09:29.201+0800","caller":"project.service.v1/project_service.go:130","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"unsupported data type: 0xc00036a148: Table not set, please set it like: db.Model(&user) or db.Table(\"users\")"}
 {"level":"ERROR","time":"2024-08-14T21:26:03.791+0800","caller":"project.service.v1/project_service.go:130","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"context deadline exceeded"}
 {"level":"ERROR","time":"2024-08-14T21:28:37.891+0800","caller":"project.service.v1/project_service.go:130","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-15T17:14:19.943+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-15T17:14:30.293+0800","caller":"project.service.v1/project_service.go:236","msg":"project FindProjectDetail FindCollectByPidAndMemId DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-15T17:17:57.062+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"etcdserver: requested lease not found"}
+{"level":"ERROR","time":"2024-08-15T17:19:09.726+0800","caller":"login.service.v1/login_service.go:227","msg":"TokenVerify ParseToken err","error":"token contains an invalid number of segments"}
+{"level":"ERROR","time":"2024-08-15T17:41:40.095+0800","caller":"project.service.v1/project_service.go:132","msg":"project FindProjectTemplate FindProjectTemplate -1/0/1 DB error, ","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-15T18:02:44.810+0800","caller":"discovery/discovery.go:118","msg":"register failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-15T19:30:17.537+0800","caller":"login.service.v1/login_service.go:227","msg":"TokenVerify ParseToken err","error":"token contains an invalid number of segments"}
+{"level":"ERROR","time":"2024-08-15T19:37:11.159+0800","caller":"discovery/resolver.go:104","msg":"sync failed","error":"context deadline exceeded"}
+{"level":"ERROR","time":"2024-08-15T19:37:11.159+0800","caller":"discovery/resolver.go:104","msg":"sync failed","error":"context deadline exceeded"}

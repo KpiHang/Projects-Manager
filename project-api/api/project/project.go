@@ -114,3 +114,50 @@ func (p HandlerProject) projectTemplate(c *gin.Context) {
 		"total": templateResponse.Total,
 	}))
 }
+
+func (p HandlerProject) projectSave(c *gin.Context) {
+	result := &common.Result{}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	// 1. 获取参数；
+	memberId := c.GetInt64("memberId") // 自定义中间件放进去的
+	organizationCode := c.GetString("organizationCode")
+
+	var req *pro.SaveProjectRequest
+	c.ShouldBind(&req)
+	msg := &project.ProjectRpcMessage{
+		MemberId:         memberId,
+		OrganizationCode: organizationCode,
+		TemplateCode:     req.TemplateCode,
+		Name:             req.Name,
+		Id:               int64(req.Id),
+		Description:      req.Description,
+	}
+	saveProject, err := ProjectServiceClient.SaveProject(ctx, msg)
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	var rsp *pro.SaveProject
+	copier.Copy(&rsp, saveProject)
+	c.JSON(http.StatusOK, result.Success(rsp))
+}
+
+func (p HandlerProject) readProject(c *gin.Context) {
+	result := &common.Result{}
+	projectCode := c.PostForm("projectCode")
+	memberId := c.GetInt64("memberId") // 传这个有点蠢hhh；
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	detail, err := ProjectServiceClient.FindProjectDetail(ctx, &project.ProjectRpcMessage{
+		ProjectCode: projectCode,
+		MemberId:    memberId,
+	})
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	pd := &pro.ProjectDetail{}
+	copier.Copy(pd, detail)
+	c.JSON(http.StatusOK, result.Success(pd))
+}

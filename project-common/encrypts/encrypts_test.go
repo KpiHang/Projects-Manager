@@ -21,4 +21,7 @@ func TestEncrypt(t *testing.T) {
 		fmt.Println(err)
 	}
 	fmt.Printf("%s ==> %s\n", cipherByte, plainText)
+
+	testCode := "e286"
+	fmt.Println(Decrypt(testCode, "sdfgyrhgbxcdgryfhgywertd"))
 }

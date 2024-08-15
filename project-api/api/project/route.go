@@ -25,4 +25,6 @@ func (*RouterProject) Register(r *gin.Engine) {
 	group.POST("/project/selfList", h.myProjectList) // 用id获取我的项目list
 	group.POST("/project", h.myProjectList)          // 用id获取 select对应类型的项目list  (表单多传一个selectBy)
 	group.POST("/project_template", h.projectTemplate)
+	group.POST("/project/save", h.projectSave)
+	group.POST("/project/read", h.readProject)
 }
