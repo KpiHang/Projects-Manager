@@ -19,5 +19,8 @@ func main() {
 	stop := func() { // grpc也需要优雅启停；
 		gc.Stop()
 	}
+	// 初始化rpc调用，project调用user模块；
+	router.InitUserRpc()
+
 	srv.Run(r, config.Conf.SC.Name, config.Conf.SC.Addr, stop)
 }

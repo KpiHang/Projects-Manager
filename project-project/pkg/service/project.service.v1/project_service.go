@@ -9,6 +9,7 @@ import (
 	"test.com/project-common/errs"
 	"test.com/project-common/tms"
 	"test.com/project-grpc/project"
+	"test.com/project-grpc/user/login"
 	"test.com/project-project/internal/dao"
 	"test.com/project-project/internal/data/menu"
 	"test.com/project-project/internal/data/pro"
@@ -16,6 +17,7 @@ import (
 	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/database/tran"
 	"test.com/project-project/internal/repo"
+	"test.com/project-project/internal/rpc"
 	"test.com/project-project/pkg/model"
 	"time"
 )
@@ -228,8 +230,13 @@ func (ps *ProjectService) FindProjectDetail(ctx context.Context, msg *project.Pr
 		return nil, errs.GrpcError(model.DBError)
 	}
 	// 2. 查项目和成员的关联表，查到项目的拥有者，去member查表名；
-	// ownerId := projectAndMember.IsOwner
-	//todo: 去 user 模块查找member表中的 username
+	ownerId := projectAndMember.IsOwner
+	// 通过rpc访问user模块， 去 user 模块查找member表中的 username， 现在是在project模块中。
+	member, err := rpc.LoginServiceClient.FindMemInfoById(c, &login.UserMessage{MemId: ownerId})
+	if err != nil {
+		zap.L().Error("project FindProjectDetail rpc.LoginServiceClient.FindMemInfoById error, ", zap.Error(err)) // 非业务错误；
+		return nil, err
+	}
 	// TODO: 优化，收藏的时候，可以放入redis
 	isCollect, err := ps.projectRepo.FindCollectByPidAndMemId(c, projectCode, memberId)
 	if err != nil {
@@ -243,7 +250,12 @@ func (ps *ProjectService) FindProjectDetail(ctx context.Context, msg *project.Pr
 
 	var detailMsg = &project.ProjectDetailMessage{}
 	copier.Copy(detailMsg, projectAndMember)
-	detailMsg.OwnerAvatar = "https://img2.baidu.com/it/u=792555388,2449797505&fm=253&fmt=auto&app=138&f=JPEG?w=667&h=500" // 项目owner的头像
-
+	detailMsg.OwnerName = member.Name
+	detailMsg.OwnerAvatar = member.Avatar
+	detailMsg.Code, _ = encrypts.EncryptInt64(projectAndMember.Id, model.AESKey)
+	detailMsg.AccessControlType = projectAndMember.GetAccessControlType()
+	detailMsg.OrganizationCode, _ = encrypts.EncryptInt64(projectAndMember.OrganizationCode, model.AESKey)
+	detailMsg.Order = int32(projectAndMember.Sort)
+	detailMsg.CreateTime = tms.FormatByMill(projectAndMember.CreateTime)
 	return detailMsg, nil
 }

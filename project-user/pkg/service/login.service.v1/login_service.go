@@ -248,7 +248,7 @@ func (ls *LoginService) TokenVerify(ctx context.Context, msg *login.LoginMessage
 	if len(orgs) > 0 {
 		memMessage.OrganizationCode, _ = encrypts.EncryptInt64(orgs[0].Id, model.AESKey) // 对外展示，所以要加密；
 	}
-
+	memMessage.CreateTime = tms.FormatByMill(memberById.CreateTime)
 	return &login.LoginResponse{Member: memMessage}, nil
 }
 
@@ -265,4 +265,25 @@ func (l *LoginService) MyOrgList(ctx context.Context, msg *login.UserMessage) (*
 		org.Code, _ = encrypts.EncryptInt64(org.Id, model.AESKey)
 	}
 	return &login.OrgListResponse{OrganizationList: orgsMessage}, nil
+}
+
+func (ls *LoginService) FindMemInfoById(ctx context.Context, msg *login.UserMessage) (*login.MemberMessage, error) {
+	memberById, err := ls.memberRepo.FindMemberById(context.Background(), msg.MemId)
+	if err != nil {
+		zap.L().Error("TokenVerify FindMemberById DB error, ", zap.Error(err)) // 非业务错误，
+		return nil, errs.GrpcError(model.DBError)
+	}
+	memMessage := &login.MemberMessage{} // grpc服务的响应实体（之一）
+	copier.Copy(memMessage, memberById)
+	memMessage.Code, _ = encrypts.EncryptInt64(memberById.Id, model.AESKey) // 加密id
+	orgs, err := ls.organizationRepo.FindOrganizationByMemberId(context.Background(), memberById.Id)
+	if err != nil {
+		zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误，
+		return nil, errs.GrpcError(model.DBError)
+	}
+	if len(orgs) > 0 {
+		memMessage.OrganizationCode, _ = encrypts.EncryptInt64(orgs[0].Id, model.AESKey) // 对外展示，所以要加密；
+	}
+	memMessage.CreateTime = tms.FormatByMill(memberById.CreateTime)
+	return memMessage, nil
 }
