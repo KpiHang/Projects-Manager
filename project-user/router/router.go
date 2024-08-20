@@ -10,6 +10,7 @@ import (
 	"test.com/project-common/logs"
 	"test.com/project-grpc/user/login"
 	"test.com/project-user/config"
+	"test.com/project-user/interceptor"
 	LoginServiceV1 "test.com/project-user/pkg/service/login.service.v1"
 )
 
@@ -57,9 +58,24 @@ func RegisterGrpc() *grpc.Server {
 		RegisterFunc: func(g *grpc.Server) {
 			login.RegisterLoginServiceServer(g, LoginServiceV1.NewLoginService()) // 生成代码中提供的函数；
 		}}
-	s := grpc.NewServer()                 // 创建了一个新的gRPC服务器实例 s。
-	c.RegisterFunc(s)                     // 将服务注册到gRPC服务器 s 上
-	lis, err := net.Listen("tcp", c.Addr) // 在指定的地址 c.Addr 上创建了一个 TCP 监听器 lis
+
+	// grpc 拦截器；调用一个grpc服务的时候，会先执行拦截器。 有些类似中间件；
+	//in := grpc.UnaryInterceptor(func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	//	// 只对当前模块下的指定路径进行拦截；
+	//	if info.FullMethod == "/login.service.v1.LoginService/MyOrgList" {
+	//		return
+	//	}
+	//	fmt.Println("请求之前")
+	//	resp, err = handler(ctx, req) // grpc服务处理请求。
+	//	fmt.Println("请求之后")
+	//	return
+	//})
+
+	// 拦截器；
+	cacheInterceptor := interceptor.New()
+	s := grpc.NewServer(cacheInterceptor.Cache()) // 创建了一个新的gRPC服务器实例 s。
+	c.RegisterFunc(s)                             // 将服务注册到gRPC服务器 s 上
+	lis, err := net.Listen("tcp", c.Addr)         // 在指定的地址 c.Addr 上创建了一个 TCP 监听器 lis
 	if err != nil {
 		log.Fatalln("cannot listen:", err)
 	}

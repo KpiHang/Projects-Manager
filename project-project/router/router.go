@@ -10,6 +10,7 @@ import (
 	"test.com/project-common/logs"
 	"test.com/project-grpc/project"
 	"test.com/project-project/config"
+	"test.com/project-project/internal/interceptor"
 	"test.com/project-project/internal/rpc"
 	project_service_v1 "test.com/project-project/pkg/service/project.service.v1"
 )
@@ -58,9 +59,10 @@ func RegisterGrpc() *grpc.Server {
 		RegisterFunc: func(g *grpc.Server) {
 			project.RegisterProjectServiceServer(g, project_service_v1.NewProjectService()) // 生成代码中提供的函数；
 		}}
-	s := grpc.NewServer()                 // 创建了一个新的gRPC服务器实例 s。
-	c.RegisterFunc(s)                     // 将服务注册到gRPC服务器 s 上
-	lis, err := net.Listen("tcp", c.Addr) // 在指定的地址 c.Addr 上创建了一个 TCP 监听器 lis
+
+	s := grpc.NewServer(interceptor.New().Cache()) // 创建了一个新的gRPC服务器实例 s。 // 用了拦截器，可以用多个拦截器
+	c.RegisterFunc(s)                              // 将服务注册到gRPC服务器 s 上
+	lis, err := net.Listen("tcp", c.Addr)          // 在指定的地址 c.Addr 上创建了一个 TCP 监听器 lis
 	if err != nil {
 		log.Fatalln("cannot listen:", err)
 	}

@@ -2,6 +2,7 @@ package login_service_v1
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/jinzhu/copier"
@@ -163,7 +164,6 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 		zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误；
 		return nil, errs.GrpcError(model.DBError)
 	}
-	// todo: 如果查询为空，mem 并不是是nil，而是一个零值 &member.Member{}
 	if mem == nil {
 		return nil, errs.GrpcError(model.AccountOrPwdError)
 	}
@@ -209,7 +209,15 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 		TokenType:      "bearer",
 	}
 
-	// 4. 返回响应  todo:member orgs 放入缓存
+	// 4. 返回响应
+	// 把必要信息放入缓存中。
+	go func() { // 异步执行，避免阻塞 把 member orgs 放入缓存
+		marshal, _ := json.Marshal(mem) // 缓存member info
+		ls.cache.Put(c, model.Member+"::"+memIdStr, string(marshal), exp)
+		orgsJson, _ := json.Marshal(orgs) // 缓存orgs info
+		ls.cache.Put(c, model.MemberOrganization+"::"+memIdStr, string(orgsJson), exp)
+	}()
+
 	return &login.LoginResponse{
 		Member:           memMessage,
 		OrganizationList: orgsMessage,
@@ -227,24 +235,49 @@ func (ls *LoginService) TokenVerify(ctx context.Context, msg *login.LoginMessage
 		zap.L().Error("TokenVerify ParseToken err", zap.Error(err))
 		return nil, errs.GrpcError(model.NoLogin)
 	}
-
-	// 数据库查询，优化点（todo），登陆之后应该把用户信息缓存起来；
-	id, _ := strconv.ParseInt(parseToken, 10, 64)
-	memberById, err := ls.memberRepo.FindMemberById(context.Background(), id)
+	// 登陆成功后，会把用户的信息放入缓存中。从缓存中获取信息。
+	memJson, err := ls.cache.Get(context.Background(), model.Member+"::"+parseToken)
 	if err != nil {
-		zap.L().Error("TokenVerify FindMemberById DB error, ", zap.Error(err)) // 非业务错误，
-		return nil, errs.GrpcError(model.DBError)
+		zap.L().Error("TokenVerify cache get member err", zap.Error(err))
+		return nil, errs.GrpcError(model.NoLogin)
 	}
+	if memJson == "" { // 缓存过期了
+		zap.L().Error("TokenVerify cache get member expire")
+		return nil, errs.GrpcError(model.NoLogin)
+	}
+	memberById := &member.Member{}
+	json.Unmarshal([]byte(memJson), memberById)
+	// 之前从数据库拿信息，现在是从redis 缓存中获取信息。
+	//id, _ := strconv.ParseInt(parseToken, 10, 64)
+	//memberById, err := ls.memberRepo.FindMemberById(context.Background(), id)
+	//if err != nil {
+	//	zap.L().Error("TokenVerify FindMemberById DB error, ", zap.Error(err)) // 非业务错误，
+	//	return nil, errs.GrpcError(model.DBError)
+	//}
 	memMessage := &login.MemberMessage{} // grpc服务的响应实体（之一）
 	copier.Copy(memMessage, memberById)
 	memMessage.Code, _ = encrypts.EncryptInt64(memberById.Id, model.AESKey) // 加密id
 
-	// 根据用户id 查组织；todo：可以从缓存中获取ogrg，如果没有直接返回认证失败；
-	orgs, err := ls.organizationRepo.FindOrganizationByMemberId(context.Background(), memberById.Id)
+	// 根据用户id 查组织；从缓存中获取；
+	orgsJson, err := ls.cache.Get(context.Background(), model.MemberOrganization+"::"+parseToken)
 	if err != nil {
-		zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误，
-		return nil, errs.GrpcError(model.DBError)
+		zap.L().Error("TokenVerify cache get organization err", zap.Error(err))
+		return nil, errs.GrpcError(model.NoLogin)
 	}
+	if orgsJson == "" { // 缓存过期了
+		zap.L().Error("TokenVerify cache get organization expire")
+		return nil, errs.GrpcError(model.NoLogin)
+	}
+	var orgs []*organization.Organization
+	json.Unmarshal([]byte(orgsJson), &orgs)
+
+	// 之前从数据库拿信息，现在是从redis 缓存中获取信息。
+	//orgs, err := ls.organizationRepo.FindOrganizationByMemberId(context.Background(), memberById.Id)
+	//if err != nil {
+	//	zap.L().Error("Login DB error, ", zap.Error(err)) // 非业务错误，
+	//	return nil, errs.GrpcError(model.DBError)
+	//}
+
 	if len(orgs) > 0 {
 		memMessage.OrganizationCode, _ = encrypts.EncryptInt64(orgs[0].Id, model.AESKey) // 对外展示，所以要加密；
 	}
