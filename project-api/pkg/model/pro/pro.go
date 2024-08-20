@@ -90,3 +90,18 @@ type SaveProject struct {
 	TaskBoardTheme   string `json:"task_board_theme"`
 	OrganizationCode string `json:"organization_code"`
 }
+
+type ProjectReq struct {
+	ProjectCode        string  `json:"projectCode" form:"projectCode"`                   // 项目编码
+	Cover              string  `json:"cover" form:"cover"`                               // 封面图片URL
+	Name               string  `json:"name" form:"name"`                                 // 项目名称
+	Description        string  `json:"description" form:"description"`                   // 项目描述
+	Schedule           float64 `json:"schedule" form:"schedule"`                         // 项目进度
+	Private            int     `json:"private" form:"private"`                           // 是否私有项目 (1: 是, 0: 否)
+	Prefix             string  `json:"prefix" form:"prefix"`                             // 前缀
+	OpenPrefix         int     `json:"open_prefix" form:"open_prefix"`                   // 是否开放前缀 (1: 是, 0: 否)
+	OpenBeginTime      int     `json:"open_begin_time" form:"open_begin_time"`           // 开始时间 (时间戳)
+	OpenTaskPrivate    int     `json:"open_task_private" form:"open_task_private"`       // 任务是否私有 (1: 是, 0: 否)
+	TaskBoardTheme     string  `json:"task_board_theme" form:"task_board_theme"`         // 任务板主题
+	AutoUpdateSchedule int     `json:"auto_update_schedule" form:"auto_update_schedule"` // 是否自动更新进度 (1: 是, 0: 否)
+}

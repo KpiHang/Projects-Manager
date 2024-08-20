@@ -19,5 +19,5 @@
 **公共模板**
 ![img.png](assets/publicProjTemp.png)
 
-**项目详情** (read project)
+**项目更新** (read project)
 ![img.png](assets/readProject.png)

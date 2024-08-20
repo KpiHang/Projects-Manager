@@ -61,7 +61,7 @@ func (p *ProjectDao) SaveProjectMember(conn database.DbConn, ctx context.Context
 func (p *ProjectDao) FindProjectByPIdAndMemId(ctx context.Context, projectCode int64, memberId int64) (*pro.ProjectAndMember, error) {
 	var pm *pro.ProjectAndMember
 	session := p.conn.Session(ctx)
-	sql := fmt.Sprintf("select * from ms_project  a, ms_project_member b where a.id = b.project_code and b.member_code = ? and b.project_code = ? limit 1")
+	sql := fmt.Sprintf("select a.*, b.project_code, b.member_code, b.join_time, b.is_owner, b.authorize from ms_project  a, ms_project_member b where a.id = b.project_code and b.member_code = ? and b.project_code = ? limit 1")
 	raw := session.Raw(sql, memberId, projectCode)
 	err := raw.Scan(&pm).Error
 	return pm, err
@@ -95,4 +95,8 @@ func (p *ProjectDao) DeleteProjectCollect(ctx context.Context, memberId int64, p
 	return p.conn.Session(ctx).
 		Where("member_code = ? and project_code = ?", memberId, projectCode).
 		Delete(&pro.ProjectCollection{}).Error
+}
+
+func (p *ProjectDao) UpdateProject(ctx context.Context, proj *pro.Project) error {
+	return p.conn.Session(ctx).Updates(&proj).Error
 }

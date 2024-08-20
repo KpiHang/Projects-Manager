@@ -290,3 +290,31 @@ func (ps *ProjectService) UpdateDeteledProject(ctx context.Context, msg *project
 	}
 	return &project.DeletedProjectResponse{}, nil
 }
+
+func (ps *ProjectService) UpdateProject(ctx context.Context, msg *project.UpdateProjectMessage) (*project.UpdateProjectResponse, error) {
+	projectCodeStr, _ := encrypts.Decrypt(msg.ProjectCode, model.AESKey)
+	projectCode, _ := strconv.ParseInt(projectCodeStr, 10, 64)
+	c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	proj := &pro.Project{
+		Id:                 projectCode,
+		Name:               msg.Name,
+		Description:        msg.Description,
+		Cover:              msg.Cover,
+		TaskBoardTheme:     msg.TaskBoardTheme,
+		Prefix:             msg.Prefix,
+		Private:            int(msg.Private),
+		OpenPrefix:         int(msg.OpenPrefix),
+		OpenBeginTime:      int(msg.OpenBeginTime),
+		OpenTaskPrivate:    int(msg.OpenTaskPrivate),
+		Schedule:           msg.Schedule,
+		AutoUpdateSchedule: int(msg.AutoUpdateSchedule),
+	}
+	err := ps.projectRepo.UpdateProject(c, proj)
+	if err != nil {
+		zap.L().Error("project UpdateProject UpdateProject DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
+	return &project.UpdateProjectResponse{}, nil
+}

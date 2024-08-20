@@ -30,4 +30,5 @@ func (*RouterProject) Register(r *gin.Engine) {
 	group.POST("/project/recycle", h.recycleProject)         // 移入回收站
 	group.POST("/project/recovery", h.recoveryProject)       // 移出回收站
 	group.POST("/project_collect/collect", h.collectProject) // 收藏项目
+	group.POST("/project/edit", h.editProject)               // 编辑项目
 }
