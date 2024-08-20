@@ -75,3 +75,14 @@ func (p *ProjectDao) FindCollectByPidAndMemId(ctx context.Context, projectCode i
 	err := raw.Scan(&count).Error
 	return count > 0, err
 }
+
+func (p *ProjectDao) UpdateDeteledProject(ctx context.Context, id int64, deleted bool) error {
+	session := p.conn.Session(ctx)
+	var err error
+	if deleted {
+		err = session.Model(&pro.Project{}).Where("id = ?", id).Update("deleted", 1).Error
+	} else {
+		err = session.Model(&pro.Project{}).Where("id = ?", id).Update("deleted", 0).Error
+	}
+	return err
+}

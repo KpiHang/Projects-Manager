@@ -27,4 +27,6 @@ func (*RouterProject) Register(r *gin.Engine) {
 	group.POST("/project_template", h.projectTemplate)
 	group.POST("/project/save", h.projectSave)
 	group.POST("/project/read", h.readProject)
+	group.POST("/project/recycle", h.recycleProject)   // 移入回收站
+	group.POST("/project/recovery", h.recoveryProject) // 移出回收站
 }

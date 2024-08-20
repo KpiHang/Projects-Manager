@@ -161,3 +161,36 @@ func (p HandlerProject) readProject(c *gin.Context) {
 	copier.Copy(pd, detail)
 	c.JSON(http.StatusOK, result.Success(pd))
 }
+
+func (p HandlerProject) recycleProject(c *gin.Context) {
+	result := &common.Result{}
+	projectCode := c.PostForm("projectCode")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_, err := ProjectServiceClient.UpdateDeteledProject(ctx, &project.ProjectRpcMessage{
+		ProjectCode: projectCode,
+		Deleted:     true,
+	})
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	c.JSON(http.StatusOK, result.Success([]int{})) // 返回值为空切片就行；
+}
+
+// recoveryProject 恢复项目，和删除项目用一个接口，传递参数  Deleted:     false,;  也可以用俩接口；
+func (p HandlerProject) recoveryProject(c *gin.Context) {
+	result := &common.Result{}
+	projectCode := c.PostForm("projectCode")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_, err := ProjectServiceClient.UpdateDeteledProject(ctx, &project.ProjectRpcMessage{
+		ProjectCode: projectCode,
+		Deleted:     false,
+	})
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	c.JSON(http.StatusOK, result.Success([]int{})) // 返回值为空切片就行；
+}
