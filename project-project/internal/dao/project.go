@@ -86,3 +86,13 @@ func (p *ProjectDao) UpdateDeteledProject(ctx context.Context, id int64, deleted
 	}
 	return err
 }
+
+func (p *ProjectDao) SaveProjectCollect(ctx context.Context, pc *pro.ProjectCollection) error {
+	return p.conn.Session(ctx).Save(&pc).Error
+}
+
+func (p *ProjectDao) DeleteProjectCollect(ctx context.Context, memberId int64, projectCode int64) error {
+	return p.conn.Session(ctx).
+		Where("member_code = ? and project_code = ?", memberId, projectCode).
+		Delete(&pro.ProjectCollection{}).Error
+}

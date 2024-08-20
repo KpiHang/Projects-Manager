@@ -80,10 +80,27 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 
 	if msg.SelectBy == "collect" { // 用到用户项目收藏表了，用新的方法。
 		pms, total, err = p.projectRepo.FindCollectProjectByMemId(ctx, memberId, page, pageSize)
+		for _, v := range pms { // 收藏的状态置为1
+			v.Collected = model.Collected
+		}
+	} else { // 每一种类型的项目，都要知道这个项目是否已经被收藏了，并设置收藏的状态
+		collectPms, _, err := p.projectRepo.FindCollectProjectByMemId(ctx, memberId, page, pageSize)
+		if err != nil {
+			zap.L().Error("project FindProjectByMemId::FindCollectProjectByMemId DB error, ", zap.Error(err)) // 非业务错误；
+			return nil, errs.GrpcError(model.DBError)
+		}
+		var cMap = make(map[int64]*pro.ProjectAndMember) // 所有收藏的项目的ID
+		for _, v := range collectPms {
+			cMap[v.Id] = v
+		}
+		for _, v := range pms {
+			if _, ok := cMap[v.ProjectCode]; ok {
+				v.Collected = model.Collected // 设置pms中的项目，如果已经被收藏了，设置收藏的状态。
+			}
+		}
 	}
-
 	if err != nil {
-		zap.L().Error("project FindProjectByMemId DB error, ", zap.Error(err)) // 非业务错误；
+		zap.L().Error("project  FindProjectByMemId FindProjectByMemId DB error, ", zap.Error(err)) // 非业务错误；
 		return nil, errs.GrpcError(model.DBError)
 	}
 	if pms == nil { // 如果没值的话，返回一个默认的数据；

@@ -15,6 +15,8 @@ type ProjectRepo interface {
 	FindProjectByPIdAndMemId(ctx context.Context, projectCode int64, memberId int64) (*pro.ProjectAndMember, error)
 	FindCollectByPidAndMemId(ctx context.Context, projectCode int64, memberId int64) (bool, error)
 	UpdateDeteledProject(ctx context.Context, id int64, deleted bool) error
+	SaveProjectCollect(ctx context.Context, pc *pro.ProjectCollection) error
+	DeleteProjectCollect(ctx context.Context, memberId int64, projectCode int64) error
 }
 
 // ProjectTemplateRepo 系统模版、自定义模版、所有的模版；

@@ -1,2 +1,6 @@
+*.sum
+
+.idea/
+
 logs/
 

@@ -10,8 +10,7 @@
 ![](./assets/homepage.png)
 
 **项目管理**
-![](./assets/homepage.png)
-![img.png](assets/projManaging.png)
+![img.png](assets/projects.png)
 
 **所有项目模板**
 ![img.png](assets/allProTemp.png)
