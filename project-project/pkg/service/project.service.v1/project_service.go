@@ -11,9 +11,9 @@ import (
 	"test.com/project-grpc/project"
 	"test.com/project-grpc/user/login"
 	"test.com/project-project/internal/dao"
+	"test.com/project-project/internal/data"
 	"test.com/project-project/internal/data/menu"
 	"test.com/project-project/internal/data/pro"
-	"test.com/project-project/internal/data/task"
 	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/database/tran"
 	"test.com/project-project/internal/repo"
@@ -30,6 +30,7 @@ type ProjectService struct {
 	projectRepo                               repo.ProjectRepo
 	projectTemplateRepo                       repo.ProjectTemplateRepo
 	taskStagesTemplateRepo                    repo.TaskStagesTemplateRepo
+	taskStagesRepo                            repo.TaskStagesRepo
 }
 
 func NewProjectService() *ProjectService {
@@ -40,6 +41,7 @@ func NewProjectService() *ProjectService {
 		projectRepo:            dao.NewProjectDao(),
 		projectTemplateRepo:    dao.NewProjectTemplateDao(),
 		taskStagesTemplateRepo: dao.NewTaskStagesTemplateDao(),
+		taskStagesRepo:         dao.NewTaskStagesDao(),
 	}
 }
 
@@ -161,7 +163,7 @@ func (ps *ProjectService) FindProjectTemplate(ctx context.Context, msg *project.
 	var ptas []*pro.ProjectTemplateAll
 	for _, v := range pts {
 		// 写代码，该谁做的事情，一定要交出去；
-		ptas = append(ptas, v.Convert(task.CovertProjectMap(tsts)[v.Id]))
+		ptas = append(ptas, v.Convert(data.CovertProjectMap(tsts)[v.Id]))
 	}
 
 	// 3. 组装数据，返回；
@@ -170,13 +172,21 @@ func (ps *ProjectService) FindProjectTemplate(ctx context.Context, msg *project.
 	return &project.ProjectTemplateResponse{Ptm: pmMsgs, Total: total}, nil
 }
 
-func (ps *ProjectService) SaveProject(ctx context.Context, msg *project.ProjectRpcMessage) (*project.SaveProjectMessage, error) {
+func (ps *ProjectService) SaveProject(ctxs context.Context, msg *project.ProjectRpcMessage) (*project.SaveProjectMessage, error) {
 	// 1. 保存项目表；
 	// 2. 保存项目和成员的关联表
 	organizationCodeStr, _ := encrypts.Decrypt(msg.OrganizationCode, model.AESKey)
 	organizationCode, _ := strconv.ParseInt(organizationCodeStr, 10, 64)
 	templateCodeStr, _ := encrypts.Decrypt(msg.TemplateCode, model.AESKey)
 	templateCode, _ := strconv.ParseInt(templateCodeStr, 10, 64)
+	// 获取task stage 模版信息；
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	stageTemplateList, err := ps.taskStagesTemplateRepo.FindByProjectTemplateId(ctx, int(templateCode))
+	if err != nil {
+		zap.L().Error("project SaveProject taskStagesTemplateRepo.FindByProjectTemplateId DB error, ", zap.Error(err)) // 非业务错误；
+		return nil, errs.GrpcError(model.DBError)
+	}
 
 	pr := &pro.Project{
 		Name:              msg.Name,
@@ -190,7 +200,7 @@ func (ps *ProjectService) SaveProject(ctx context.Context, msg *project.ProjectR
 		AccessControlType: model.Open,
 		TaskBoardTheme:    model.Simple,
 	}
-	err := ps.transaction.Action(func(conn database.DbConn) error { // 涉及多张表的保存，事务
+	err = ps.transaction.Action(func(conn database.DbConn) error { // 涉及多张表的保存，事务
 		// 1. 保存项目表；
 		err := ps.projectRepo.SaveProject(conn, ctx, pr)
 		if err != nil {
@@ -211,7 +221,22 @@ func (ps *ProjectService) SaveProject(ctx context.Context, msg *project.ProjectR
 			zap.L().Error("project SaveProject SaveProject DB error, ", zap.Error(err)) // 非业务错误；
 			return errs.GrpcError(model.DBError)
 		}
-
+		// 3. 生成任务的步骤；
+		for index, v := range stageTemplateList {
+			taskStage := &data.TaskStages{
+				ProjectCode: pr.Id,
+				Name:        v.Name,
+				Sort:        index + 1,
+				Description: "",
+				CreateTime:  time.Now().UnixMilli(),
+				Deleted:     model.NoDeleted,
+			}
+			err = ps.taskStagesRepo.SaveTaskStages(ctx, conn, taskStage)
+			if err != nil {
+				zap.L().Error("project SaveProject taskStagesRepo.SaveTaskStages DB error, ", zap.Error(err)) // 非业务错误；
+				return errs.GrpcError(model.DBError)
+			}
+		}
 		return nil
 	})
 	if err != nil {

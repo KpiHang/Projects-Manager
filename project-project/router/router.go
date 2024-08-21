@@ -9,10 +9,12 @@ import (
 	"test.com/project-common/discovery"
 	"test.com/project-common/logs"
 	"test.com/project-grpc/project"
+	"test.com/project-grpc/task"
 	"test.com/project-project/config"
 	"test.com/project-project/internal/interceptor"
 	"test.com/project-project/internal/rpc"
 	project_service_v1 "test.com/project-project/pkg/service/project.service.v1"
+	task_service_v1 "test.com/project-project/pkg/service/task.service.v1"
 )
 
 type Router interface {
@@ -57,7 +59,8 @@ func RegisterGrpc() *grpc.Server {
 	c := gRPCConfig{
 		Addr: config.Conf.GC.Addr,
 		RegisterFunc: func(g *grpc.Server) {
-			project.RegisterProjectServiceServer(g, project_service_v1.NewProjectService()) // 生成代码中提供的函数；
+			project.RegisterProjectServiceServer(g, project_service_v1.NewProjectService()) // 注册服务
+			task.RegisterTaskServiceServer(g, task_service_v1.NewTaskService())
 		}}
 
 	s := grpc.NewServer(interceptor.New().Cache()) // 创建了一个新的gRPC服务器实例 s。 // 用了拦截器，可以用多个拦截器

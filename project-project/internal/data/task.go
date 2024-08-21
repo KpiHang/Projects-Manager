@@ -1,4 +1,4 @@
-package task
+package data
 
 type MsTaskStagesTemplate struct {
 	Id                  int
