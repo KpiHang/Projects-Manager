@@ -100,3 +100,14 @@ func (p *ProjectDao) DeleteProjectCollect(ctx context.Context, memberId int64, p
 func (p *ProjectDao) UpdateProject(ctx context.Context, proj *pro.Project) error {
 	return p.conn.Session(ctx).Updates(&proj).Error
 }
+
+func (p *ProjectDao) FindProjectMemberByPId(ctx context.Context, projectCode int64) (list []*pro.ProjectMember, total int64, err error) {
+	session := p.conn.Session(ctx)
+	err = session.Model(&pro.ProjectMember{}).
+		Where("project_code = ?", projectCode).
+		Find(&list).Error
+	err = session.Model(&pro.ProjectMember{}).
+		Where("project_code = ?", projectCode).
+		Count(&total).Error
+	return
+}
