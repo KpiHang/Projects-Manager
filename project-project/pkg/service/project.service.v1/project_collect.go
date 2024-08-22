@@ -7,7 +7,7 @@ import (
 	"test.com/project-common/encrypts"
 	"test.com/project-common/errs"
 	"test.com/project-grpc/project"
-	"test.com/project-project/internal/data/pro"
+	"test.com/project-project/internal/data"
 	"test.com/project-project/pkg/model"
 	"time"
 )
@@ -19,7 +19,7 @@ func (ps *ProjectService) UpdateCollectProject(ctx context.Context, msg *project
 	defer cancel()
 	var err error
 	if "collect" == msg.CollectType {
-		pc := &pro.ProjectCollection{ // 用户收藏项目是一张单独的边  user_collection
+		pc := &data.ProjectCollection{ // 用户收藏项目是一张单独的边  user_collection
 			ProjectCode: projectCode,
 			MemberCode:  msg.MemberId,
 			CreateTime:  time.Now().UnixMilli(), // 毫秒值；

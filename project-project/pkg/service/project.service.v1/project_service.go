@@ -13,7 +13,6 @@ import (
 	"test.com/project-project/internal/dao"
 	"test.com/project-project/internal/data"
 	"test.com/project-project/internal/data/menu"
-	"test.com/project-project/internal/data/pro"
 	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/database/tran"
 	"test.com/project-project/internal/repo"
@@ -62,7 +61,7 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 	page := msg.Page
 	pageSize := msg.PageSize
 	var (
-		pms   []*pro.ProjectAndMember
+		pms   []*data.ProjectAndMember
 		total int64
 		err   error
 	)
@@ -91,7 +90,7 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 			zap.L().Error("project FindProjectByMemId::FindCollectProjectByMemId DB error, ", zap.Error(err)) // 非业务错误；
 			return nil, errs.GrpcError(model.DBError)
 		}
-		var cMap = make(map[int64]*pro.ProjectAndMember) // 所有收藏的项目的ID
+		var cMap = make(map[int64]*data.ProjectAndMember) // 所有收藏的项目的ID
 		for _, v := range collectPms {
 			cMap[v.Id] = v
 		}
@@ -113,7 +112,7 @@ func (p *ProjectService) FindProjectByMemId(ctx context.Context, msg *project.Pr
 	copier.Copy(&pmm, pms)
 	for _, v := range pmm {
 		v.Code, _ = encrypts.EncryptInt64(v.ProjectCode, model.AESKey)
-		pam := pro.ToMap(pms)[v.Id]
+		pam := data.ToMap(pms)[v.Id]
 		v.AccessControlType = pam.GetAccessControlType()
 		v.OrganizationCode, _ = encrypts.EncryptInt64(pam.OrganizationCode, model.AESKey)
 		v.JoinTime = tms.FormatByMill(pam.JoinTime)
@@ -135,7 +134,7 @@ func (ps *ProjectService) FindProjectTemplate(ctx context.Context, msg *project.
 	page := msg.Page
 	pageSize := msg.PageSize
 
-	var pts []pro.ProjectTemplate
+	var pts []data.ProjectTemplate
 	var total int64
 	var err error
 
@@ -154,13 +153,13 @@ func (ps *ProjectService) FindProjectTemplate(ctx context.Context, msg *project.
 		return nil, errs.GrpcError(model.DBError)
 	}
 	// 2. 模型转换；拿到模版id列表，去任务步骤模版表，查询模板包括的任务步骤；
-	tsts, err := ps.taskStagesTemplateRepo.FindInProTemIds(ctx, pro.ToProjectTemplateIds(pts))
+	tsts, err := ps.taskStagesTemplateRepo.FindInProTemIds(ctx, data.ToProjectTemplateIds(pts))
 	if err != nil {
 		zap.L().Error("project FindProjectTemplate FindInProTemIds DB error, ", zap.Error(err)) // 非业务错误；
 		return nil, errs.GrpcError(model.DBError)
 	}
 
-	var ptas []*pro.ProjectTemplateAll
+	var ptas []*data.ProjectTemplateAll
 	for _, v := range pts {
 		// 写代码，该谁做的事情，一定要交出去；
 		ptas = append(ptas, v.Convert(data.CovertProjectMap(tsts)[v.Id]))
@@ -188,7 +187,7 @@ func (ps *ProjectService) SaveProject(ctxs context.Context, msg *project.Project
 		return nil, errs.GrpcError(model.DBError)
 	}
 
-	pr := &pro.Project{
+	pr := &data.Project{
 		Name:              msg.Name,
 		Description:       msg.Description,
 		TemplateCode:      int(templateCode),
@@ -209,7 +208,7 @@ func (ps *ProjectService) SaveProject(ctxs context.Context, msg *project.Project
 		}
 
 		// 2. 保存项目和成员的关联表
-		pm := &pro.ProjectMember{
+		pm := &data.ProjectMember{
 			ProjectCode: pr.Id,
 			MemberCode:  msg.MemberId,
 			JoinTime:    time.Now().UnixMilli(),
@@ -322,7 +321,7 @@ func (ps *ProjectService) UpdateProject(ctx context.Context, msg *project.Update
 	c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	proj := &pro.Project{
+	proj := &data.Project{
 		Id:                 projectCode,
 		Name:               msg.Name,
 		Description:        msg.Description,

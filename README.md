@@ -7,7 +7,7 @@
 ![](./assets/register.png)
 
 **HomePage**
-![](./assets/homepage.png)
+![img.png](assets/homepage.png)
 
 **项目管理**
 ![img.png](assets/projects.png)

@@ -1,9 +1,8 @@
-package pro
+package data
 
 import (
 	"test.com/project-common/encrypts"
 	"test.com/project-common/tms"
-	"test.com/project-project/internal/data"
 	"test.com/project-project/pkg/model"
 )
 
@@ -38,6 +37,14 @@ func (*Project) TableName() string {
 	return "ms_project"
 }
 
+func ToProjectMap(list []*Project) map[int64]*Project {
+	m := make(map[int64]*Project, len(list))
+	for _, v := range list {
+		m[v.Id] = v
+	}
+	return m
+}
+
 type ProjectMember struct {
 	Id          int64
 	ProjectCode int64
@@ -63,6 +70,19 @@ type ProjectAndMember struct { // project member 链接表
 }
 
 func (m *ProjectAndMember) GetAccessControlType() string {
+	if m.AccessControlType == 0 {
+		return "open"
+	}
+	if m.AccessControlType == 1 {
+		return "private"
+	}
+	if m.AccessControlType == 2 {
+		return "custom"
+	}
+	return ""
+}
+
+func (m *Project) GetAccessControlType() string {
 	if m.AccessControlType == 0 {
 		return "open"
 	}
@@ -120,11 +140,11 @@ type ProjectTemplateAll struct {
 	Cover            string
 	MemberCode       string
 	IsSystem         int
-	TaskStages       []*data.TaskStagesOnlyName
+	TaskStages       []*TaskStagesOnlyName
 	Code             string
 }
 
-func (pt ProjectTemplate) Convert(taskStages []*data.TaskStagesOnlyName) *ProjectTemplateAll {
+func (pt ProjectTemplate) Convert(taskStages []*TaskStagesOnlyName) *ProjectTemplateAll {
 	organizationCode, _ := encrypts.EncryptInt64(pt.OrganizationCode, model.AESKey)
 	memberCode, _ := encrypts.EncryptInt64(pt.MemberCode, model.AESKey)
 	code, _ := encrypts.EncryptInt64(int64(pt.Id), model.AESKey)
