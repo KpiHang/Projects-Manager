@@ -3,6 +3,7 @@ package dao
 import (
 	"context"
 	"fmt"
+	"gorm.io/gorm"
 	"test.com/project-project/internal/data/pro"
 	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/database/gorms"
@@ -109,5 +110,13 @@ func (p *ProjectDao) FindProjectMemberByPId(ctx context.Context, projectCode int
 	err = session.Model(&pro.ProjectMember{}).
 		Where("project_code = ?", projectCode).
 		Count(&total).Error
+	return
+}
+
+func (p *ProjectDao) FindProjectById(ctx context.Context, projectCode int64) (pj *pro.Project, err error) {
+	err = p.conn.Session(ctx).Where("id=?", projectCode).Find(&pj).Error
+	if err == gorm.ErrRecordNotFound { // 查单个记录；需要判断
+		return nil, nil
+	}
 	return
 }

@@ -19,6 +19,7 @@ type ProjectRepo interface {
 	DeleteProjectCollect(ctx context.Context, memberId int64, projectCode int64) error
 	UpdateProject(ctx context.Context, proj *pro.Project) error
 	FindProjectMemberByPId(ctx context.Context, projectCode int64) (list []*pro.ProjectMember, total int64, err error)
+	FindProjectById(ctx context.Context, projectCode int64) (pj *pro.Project, err error)
 }
 
 // ProjectTemplateRepo 系统模版、自定义模版、所有的模版；
