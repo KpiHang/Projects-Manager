@@ -73,6 +73,15 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gatewayResponse.Success("")) // 由api网关响应给客户端
 }
 
+// GetIp 获取ip函数
+func GetIp(c *gin.Context) string {
+	ip := c.ClientIP()
+	if ip == "::1" {
+		ip = "127.0.0.1"
+	}
+	return ip
+}
+
 func (h *HandlerUser) Login(ctx *gin.Context) {
 	// 1. 接收参数；需要有一个参数的模型（结构体、Model）
 	// 2. 调用user grpc 完成登陆
@@ -95,6 +104,7 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gatewayResponse.Fail(http.StatusBadRequest, "copy 参数格式有误"))
 		return
 	}
+	msg.Ip = GetIp(ctx)
 	loginRsp, err := rpc.LoginServiceClient.Login(c, msg) // 在user 模块中写注册相关的grpc服务；
 	if err != nil {
 		code, msg := errs.ParseGrpcError(err) // grpc 服务返回的code msg

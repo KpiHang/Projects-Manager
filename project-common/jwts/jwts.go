@@ -14,13 +14,14 @@ type JwtToken struct {
 	RefreshExp   int64  // 刷新令牌的过期时间（Unix 时间戳）
 }
 
-func CreateToken(val string, exp time.Duration, secret string, refreshExp time.Duration, refreshSecret string) *JwtToken {
+func CreateToken(val string, exp time.Duration, secret string, refreshExp time.Duration, refreshSecret string, ip string) *JwtToken {
 	// 计算访问令牌的过期时间
 	aExp := time.Now().Add(exp).Unix()
 	// 创建访问令牌
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"token": val,
 		"exp":   aExp,
+		"ip":    ip,
 	})
 	// 签名访问令牌
 	aToken, _ := accessToken.SignedString([]byte(secret))
@@ -44,7 +45,7 @@ func CreateToken(val string, exp time.Duration, secret string, refreshExp time.D
 	}
 }
 
-func ParseToken(tokenString string, secret string) (string, error) {
+func ParseToken(tokenString string, secret string, ip string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -62,6 +63,9 @@ func ParseToken(tokenString string, secret string) (string, error) {
 		exp := int64(claims["exp"].(float64))
 		if time.Now().Unix() > exp {
 			return "", errors.New("token expired")
+		}
+		if claims["ip"] != ip {
+			return "", errors.New("ip 来源不合法")
 		}
 		return val, nil
 	} else {

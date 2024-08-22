@@ -200,8 +200,9 @@ func (ls *LoginService) Login(ctx context.Context, msg *login.LoginMessage) (*lo
 		config.Conf.JwtConfig.AccessSecret,
 		rexp,
 		config.Conf.JwtConfig.RefreshSecret,
+		msg.Ip,
 	)
-
+	// todo：可以给token做加密处理，增加安全性
 	tokenList := &login.TokenMessage{
 		AccessToken:    token.AccessToken,
 		RefreshToken:   token.RefreshToken,
@@ -230,7 +231,7 @@ func (ls *LoginService) TokenVerify(ctx context.Context, msg *login.LoginMessage
 	if strings.Contains(token, "bearer") {
 		token = strings.ReplaceAll(token, "bearer ", "") // 前端传过来的token 前面带了 bearer ;
 	}
-	parseToken, err := jwts.ParseToken(token, config.Conf.JwtConfig.AccessSecret)
+	parseToken, err := jwts.ParseToken(token, config.Conf.JwtConfig.AccessSecret, msg.Ip)
 	if err != nil {
 		zap.L().Error("TokenVerify ParseToken err", zap.Error(err))
 		return nil, errs.GrpcError(model.NoLogin)
