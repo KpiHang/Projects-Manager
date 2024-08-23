@@ -13,6 +13,7 @@ import (
 	"test.com/project-project/internal/data"
 	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/database/tran"
+	"test.com/project-project/internal/domain"
 	"test.com/project-project/internal/repo"
 	"test.com/project-project/internal/rpc"
 	"test.com/project-project/pkg/model"
@@ -32,6 +33,7 @@ type TaskService struct {
 	taskWorkTimeRepo                    repo.TaskWorkTimeRepo
 	fileRepo                            repo.FileRepo
 	sourceLinkRepo                      repo.SourceLinkRepo
+	taskWorkTimeDomain                  *domain.TaskWorkTimeDomain // domain 领域层改造代码，失败
 }
 
 func NewTaskService() *TaskService {
@@ -47,6 +49,7 @@ func NewTaskService() *TaskService {
 		taskWorkTimeRepo:       dao.NewTaskWorkTimeDao(),
 		fileRepo:               dao.NewFileDao(),
 		sourceLinkRepo:         dao.NewSourceLinkDao(),
+		taskWorkTimeDomain:     domain.NewTaskWorkTimeDomain(),
 	}
 }
 
@@ -655,6 +658,18 @@ func (t *TaskService) TaskLog(ctx context.Context, msg *task.TaskReqMessage) (*t
 	copier.Copy(&l, displayList)
 	return &task.TaskLogList{List: l, Total: total}, nil
 }
+
+//TaskWorkTimeList 领域层改造后，访问不了了。
+//func (t *TaskService) TaskWorkTimeList(ctx context.Context, msg *task.TaskReqMessage) (*task.TaskWorkTimeResponse, error) {
+//	taskCode := encrypts.DecryptNoErr(msg.TaskCode)
+//	list, err := t.taskWorkTimeDomain.TaskWorkTimeList(taskCode)
+//	if err != nil {
+//		return nil, errs.GrpcError(err)
+//	}
+//	var l []*task.TaskWorkTime
+//	copier.Copy(&l, list)
+//	return &task.TaskWorkTimeResponse{List: l, Total: int64(len(l))}, nil
+//}
 
 func (t *TaskService) TaskWorkTimeList(ctx context.Context, msg *task.TaskReqMessage) (*task.TaskWorkTimeResponse, error) {
 	taskCode := encrypts.DecryptNoErr(msg.TaskCode)
