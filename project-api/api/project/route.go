@@ -31,6 +31,7 @@ func (*RouterProject) Register(r *gin.Engine) {
 	group.POST("/project/recovery", h.recoveryProject)       // 移出回收站
 	group.POST("/project_collect/collect", h.collectProject) // 收藏项目
 	group.POST("/project/edit", h.editProject)               // 编辑项目
+	group.POST("/project/getLogBySelfProject", h.getLogBySelfProject)
 
 	t := NewTask()
 	group.POST("/task_stages", t.taskStages)

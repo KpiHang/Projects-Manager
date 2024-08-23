@@ -12,6 +12,12 @@ type TaskDao struct {
 	conn *gorms.GormConn
 }
 
+func (t *TaskDao) FindTaskByIds(ctx context.Context, taskIdList []int64) (list []*data.Task, err error) {
+	session := t.conn.Session(ctx)
+	err = session.Model(&data.Task{}).Where("id in ?", taskIdList).Find(&list).Error
+	return
+}
+
 func NewTaskDao() *TaskDao {
 	return &TaskDao{
 		conn: gorms.NewGormConn(),

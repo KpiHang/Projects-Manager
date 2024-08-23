@@ -10,6 +10,19 @@ type ProjectLogDao struct {
 	conn *gorms.GormConn
 }
 
+func (p *ProjectLogDao) FindLogByMemberCode(ctx context.Context, id int64, page int64, size int64) (list []*data.ProjectLog, total int64, err error) {
+	session := p.conn.Session(ctx)
+	offset := (page - 1) * size
+	err = session.Model(&data.ProjectLog{}).
+		Where("member_code=?", id).
+		Limit(int(size)).Offset(int(offset)).
+		Order("create_time desc").
+		Find(&list).Error
+	err = session.Model(&data.ProjectLog{}).
+		Where("member_code=?", id).Count(&total).Error
+	return
+}
+
 func (p *ProjectLogDao) SaveProjectLog(pl *data.ProjectLog) {
 	session := p.conn.Session(context.Background())
 	session.Save(&pl)
