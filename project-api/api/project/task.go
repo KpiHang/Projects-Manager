@@ -211,3 +211,60 @@ func (t *HandlerTask) myTaskList(c *gin.Context) {
 		"total": myTaskListResponse.Total,
 	}))
 }
+
+func (t *HandlerTask) readTask(c *gin.Context) {
+	result := &common.Result{}
+	taskCode := c.PostForm("taskCode")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	msg := &task.TaskReqMessage{
+		TaskCode: taskCode,
+		MemberId: c.GetInt64("memberId"),
+	}
+	taskMessage, err := TaskServiceClient.ReadTask(ctx, msg)
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	td := &tasks.TaskDisplay{}
+	copier.Copy(td, taskMessage)
+	if td != nil {
+		if td.Tags == nil {
+			td.Tags = []int{}
+		}
+		if td.ChildCount == nil {
+			td.ChildCount = []int{}
+		}
+	}
+	c.JSON(200, result.Success(td))
+}
+
+func (t *HandlerTask) listTaskMember(c *gin.Context) {
+	result := &common.Result{}
+	taskCode := c.PostForm("taskCode")
+	page := &model.Page{}
+	page.Bind(c)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	msg := &task.TaskReqMessage{
+		TaskCode: taskCode,
+		MemberId: c.GetInt64("memberId"),
+		Page:     page.Page,
+		PageSize: page.PageSize,
+	}
+	taskMemberResponse, err := TaskServiceClient.ListTaskMember(ctx, msg)
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	var tms []*tasks.TaskMember
+	copier.Copy(&tms, taskMemberResponse.List)
+	if tms == nil {
+		tms = []*tasks.TaskMember{}
+	}
+	c.JSON(http.StatusOK, result.Success(gin.H{
+		"list":  tms,
+		"total": taskMemberResponse.Total,
+		"page":  page.Page,
+	}))
+}

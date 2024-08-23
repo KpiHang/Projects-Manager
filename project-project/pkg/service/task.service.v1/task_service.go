@@ -476,3 +476,94 @@ func (t *TaskService) MyTaskList(ctx context.Context, msg *task.TaskReqMessage) 
 	copier.Copy(&myMsgs, mtdList)
 	return &task.MyTaskListResponse{List: myMsgs, Total: total}, nil
 }
+
+func (t *TaskService) ReadTask(ctx context.Context, msg *task.TaskReqMessage) (*task.TaskMessage, error) {
+	// 根据taskCode去查任务详情，
+	//根据任务查询项目详情，
+	//根据任务查询步骤详情，
+	//根据任务执行者查询执行者信息；
+
+	taskCode := encrypts.DecryptNoErr(msg.TaskCode)
+	c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	// 根据taskCode去查任务详情，
+	taskInfo, err := t.taskRepo.FindTaskById(c, taskCode)
+	if err != nil {
+		zap.L().Error("project task ReadTask taskRepo FindTaskById error", zap.Error(err))
+		return nil, errs.GrpcError(model.DBError)
+	}
+	if taskInfo == nil {
+		return &task.TaskMessage{}, nil
+	}
+
+	display := taskInfo.ToTaskDisplay()
+	if taskInfo.Private == 1 {
+		//代表隐私模式
+		taskMember, err := t.taskRepo.FindTaskMemberByTaskId(ctx, taskInfo.Id, msg.MemberId)
+		if err != nil {
+			zap.L().Error("project task TaskList taskRepo.FindTaskMemberByTaskId error", zap.Error(err))
+			return nil, errs.GrpcError(model.DBError)
+		}
+		if taskMember != nil {
+			display.CanRead = model.CanRead
+		} else {
+			display.CanRead = model.NoCanRead
+		}
+	}
+	//根据任务查询项目详情，
+	pj, err := t.projectRepo.FindProjectById(c, taskInfo.ProjectCode)
+	display.ProjectName = pj.Name
+	//根据任务查询步骤详情，
+	taskStages, err := t.taskStagesRepo.FindById(c, taskInfo.StageCode)
+	display.StageName = taskStages.Name
+
+	//根据任务执行者查询执行者信息；
+	memberMessage, err := rpc.LoginServiceClient.FindMemInfoById(ctx, &login.UserMessage{MemId: taskInfo.AssignTo})
+	if err != nil {
+		zap.L().Error("project task TaskList LoginServiceClient.FindMemInfoById error", zap.Error(err))
+		return nil, err
+	}
+	e := data.Executor{ // 组装成Executor
+		Name:   memberMessage.Name,
+		Avatar: memberMessage.Avatar,
+	}
+	display.Executor = e
+	var taskMessage = &task.TaskMessage{}
+	copier.Copy(taskMessage, display)
+	return taskMessage, nil
+}
+
+func (t *TaskService) ListTaskMember(ctx context.Context, msg *task.TaskReqMessage) (*task.TaskMemberList, error) {
+	// 查询 task member表，根据membercode去查member信息。
+
+	taskCode := encrypts.DecryptNoErr(msg.TaskCode)
+	c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	taskMemberPage, total, err := t.taskRepo.FindTaskMemberPage(c, taskCode, msg.Page, msg.PageSize)
+	if err != nil {
+		zap.L().Error("project task TaskList taskRepo.FindTaskMemberPage error", zap.Error(err))
+		return nil, errs.GrpcError(model.DBError)
+	}
+	var mids []int64
+	for _, v := range taskMemberPage {
+		mids = append(mids, v.MemberCode)
+	}
+	messageList, err := rpc.LoginServiceClient.FindMemInfoByIds(ctx, &login.UserMessage{MIds: mids})
+	mMap := make(map[int64]*login.MemberMessage, len(messageList.List))
+	for _, v := range messageList.List {
+		mMap[v.Id] = v
+	}
+	var taskMemeberMemssages []*task.TaskMemberMessage
+	for _, v := range taskMemberPage {
+		tm := &task.TaskMemberMessage{}
+		tm.Code = encrypts.EncryptNoErr(v.MemberCode)
+		tm.Id = v.Id
+		message := mMap[v.MemberCode]
+		tm.Name = message.Name
+		tm.Avatar = message.Avatar
+		tm.IsExecutor = int32(v.IsExecutor)
+		tm.IsOwner = int32(v.IsOwner)
+		taskMemeberMemssages = append(taskMemeberMemssages, tm)
+	}
+	return &task.TaskMemberList{List: taskMemeberMemssages, Total: total}, nil
+}
