@@ -4,12 +4,16 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"go.uber.org/zap"
 	"net/http"
+	"os"
+	"path"
 	"test.com/project-api/pkg/model"
 	"test.com/project-api/pkg/model/pro"
 	"test.com/project-api/pkg/model/tasks"
 	common "test.com/project-common"
 	"test.com/project-common/errs"
+	"test.com/project-common/fs"
 	"test.com/project-common/tms"
 	"test.com/project-grpc/task"
 	"time"
@@ -348,4 +352,136 @@ func (t *HandlerTask) saveTaskWorkTime(c *gin.Context) {
 		c.JSON(http.StatusOK, result.Fail(code, msg))
 	}
 	c.JSON(http.StatusOK, result.Success([]int{}))
+}
+
+func (t *HandlerTask) uploadFiles(c *gin.Context) {
+	result := &common.Result{}
+	req := model.UploadFileReq{}
+	c.ShouldBind(&req)
+	// 处理文件；
+	multipartForm, err := c.MultipartForm()
+	if err != nil {
+		zap.L().Error("c.MultipartForm() err", zap.Error(err))
+		return
+	}
+	file := multipartForm.File
+	// 假设只上传一个文件；
+	uploadFile := file["file"][0]
+	// 第一种：没有达成分片条件；就没分片。
+	key := ""
+	if req.TotalChunks == 1 {
+		//代表不分片，直接上传
+		path := "upload/" + req.ProjectCode + "/" + req.TaskCode + "/" + tms.FormatYMD(time.Now())
+		if !fs.IsExist(path) { // 如果目录不存在就创建
+			os.MkdirAll(path, os.ModePerm)
+		}
+		dst := path + "/" + req.Filename
+		key = dst
+		err := c.SaveUploadedFile(uploadFile, dst)
+		if err != nil {
+			c.JSON(http.StatusOK, result.Fail(-999, err.Error()))
+			return
+		}
+	}
+
+	if req.TotalChunks > 1 { // 分片上传，先把每次的存储起来，然后追加；
+		path := "upload/" + req.ProjectCode + "/" + req.TaskCode + "/" + tms.FormatYMD(time.Now())
+		if !fs.IsExist(path) { // 如果目录不存在就创建
+			os.MkdirAll(path, os.ModePerm)
+		}
+		fileName := path + "/" + req.Identifier
+		openFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
+		if err != nil {
+			c.JSON(http.StatusOK, result.Fail(-999, err.Error()))
+			return
+		}
+		open, err := uploadFile.Open()
+		if err != nil {
+			c.JSON(http.StatusOK, result.Fail(-999, err.Error()))
+			return
+		}
+		defer open.Close()
+		buf := make([]byte, req.CurrentChunkSize)
+		open.Read(buf)
+		openFile.Write(buf)
+		openFile.Close()
+		key = fileName
+		if req.TotalChunks == req.ChunkNumber { // 最后一个分片了
+			newPath := path + "/" + req.Filename
+			key = newPath
+			os.Rename(fileName, newPath)
+		}
+	}
+	// 上传成功后，文件保存到api模块的 upload 文件夹中，下面要在数据库中记录这个文件存在哪。
+	//调用服务 存入file表
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	fileUrl := "http://localhost/" + key
+	msg := &task.TaskFileReqMessage{
+		TaskCode:         req.TaskCode,
+		ProjectCode:      req.ProjectCode,
+		OrganizationCode: c.GetString("organizationCode"),
+		PathName:         key,
+		FileName:         req.Filename,
+		Size:             int64(req.TotalSize),
+		Extension:        path.Ext(key),
+		FileUrl:          fileUrl,
+		FileType:         file["file"][0].Header.Get("Content-Type"),
+		MemberId:         c.GetInt64("memberId"),
+	}
+	if req.TotalChunks == req.ChunkNumber {
+		_, err = TaskServiceClient.SaveTaskFile(ctx, msg) // 要存两张表 file 和 source_link
+		if err != nil {
+			code, msg := errs.ParseGrpcError(err)
+			c.JSON(http.StatusOK, result.Fail(code, msg))
+		}
+	}
+
+	c.JSON(http.StatusOK, result.Success(gin.H{
+		"file":        key,
+		"hash":        "",
+		"key":         key,
+		"url":         "http://localhost/" + key,
+		"projectName": req.ProjectName,
+	}))
+	return
+}
+
+func (t *HandlerTask) taskSources(c *gin.Context) {
+	result := &common.Result{}
+	taskCode := c.PostForm("taskCode")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	sources, err := TaskServiceClient.TaskSources(ctx, &task.TaskReqMessage{TaskCode: taskCode})
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+
+	var slList []*model.SourceLink
+	copier.Copy(&slList, sources.List)
+	if slList == nil {
+		slList = []*model.SourceLink{}
+	}
+	c.JSON(http.StatusOK, result.Success(slList))
+}
+
+func (t *HandlerTask) createComment(c *gin.Context) {
+	result := &common.Result{}
+	req := model.CommentReq{}
+	c.ShouldBind(&req)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	msg := &task.TaskReqMessage{
+		TaskCode:       req.TaskCode,
+		CommentContent: req.Comment,
+		Mentions:       req.Mentions,
+		MemberId:       c.GetInt64("memberId"),
+	}
+	_, err := TaskServiceClient.CreateComment(ctx, msg)
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		c.JSON(http.StatusOK, result.Fail(code, msg))
+	}
+	c.JSON(http.StatusOK, result.Success(true))
 }

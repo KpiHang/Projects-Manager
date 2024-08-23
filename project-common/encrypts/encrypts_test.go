@@ -24,4 +24,6 @@ func TestEncrypt(t *testing.T) {
 
 	testCode := "e286"
 	fmt.Println(Decrypt(testCode, "sdfgyrhgbxcdgryfhgywertd"))
+
+	fmt.Println(DecryptNoErr("e08df7bf93"))
 }
