@@ -24,3 +24,6 @@
 
 **项目-阶段-任务**
 ![img.png](assets/tasksOfstage.png)
+
+**任务详情**
+![img.png](assets/readTask.png)
