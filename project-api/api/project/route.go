@@ -51,4 +51,9 @@ func (*RouterProject) Register(r *gin.Engine) {
 
 	a := NewAccount()
 	group.POST("/account", a.account)
+
+	d := NewDepartment()
+	group.POST("/department", d.department)
+	group.POST("/department/save", d.save)
+	group.POST("/department/read", d.read)
 }

@@ -56,7 +56,7 @@ func (d *AccountDomain) AccountList(
 		if v.DepartmentCode > 0 {
 			department, err := d.departmentDomain.FindDepartmentById(v.DepartmentCode) // 需要去department表中拿部门信息
 			if err != nil {
-				return nil, 0, model.DBError
+				return nil, 0, err
 			}
 			display.Departments = department.Name
 		}
