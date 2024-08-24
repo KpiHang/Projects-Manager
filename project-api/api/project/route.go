@@ -32,6 +32,7 @@ func (*RouterProject) Register(r *gin.Engine) {
 	group.POST("/project_collect/collect", h.collectProject) // 收藏项目
 	group.POST("/project/edit", h.editProject)               // 编辑项目
 	group.POST("/project/getLogBySelfProject", h.getLogBySelfProject)
+	group.POST("/node", h.nodeList)
 
 	t := NewTask()
 	group.POST("/task_stages", t.taskStages)

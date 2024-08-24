@@ -29,3 +29,6 @@
 
 **菜单路由**
 ![img.png](assets/menuRouter.png)
+
+**访问权限控制**
+![img.png](assets/nodeList.png)

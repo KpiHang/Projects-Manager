@@ -33,6 +33,7 @@ func TokenVerify() func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		ip := GetIp(c)
+		// todo: 先查询node表，确认不使用登陆控制的接口，就不做登陆认证了。
 		verifyRsp, err := rpc.LoginServiceClient.TokenVerify(ctx, &login.LoginMessage{Token: token, Ip: ip})
 		if err != nil {
 			code, msg := errs.ParseGrpcError(err)
