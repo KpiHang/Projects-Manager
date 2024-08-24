@@ -8,12 +8,14 @@ import (
 	"test.com/project-api/config"
 	"test.com/project-common/discovery"
 	"test.com/project-common/logs"
+	"test.com/project-grpc/account"
 	"test.com/project-grpc/project"
 	"test.com/project-grpc/task"
 )
 
 var ProjectServiceClient project.ProjectServiceClient
 var TaskServiceClient task.TaskServiceClient
+var AccountServiceClient account.AccountServiceClient
 
 func InitRpcProjectClient() {
 	// etcd 相关
@@ -27,4 +29,5 @@ func InitRpcProjectClient() {
 	}
 	ProjectServiceClient = project.NewProjectServiceClient(conn)
 	TaskServiceClient = task.NewTaskServiceClient(conn)
+	AccountServiceClient = account.NewAccountServiceClient(conn)
 }
