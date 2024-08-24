@@ -11,6 +11,7 @@ import (
 	"test.com/project-grpc/account"
 	"test.com/project-grpc/auth"
 	"test.com/project-grpc/department"
+	"test.com/project-grpc/menu"
 	"test.com/project-grpc/project"
 	"test.com/project-grpc/task"
 	"test.com/project-project/config"
@@ -19,6 +20,7 @@ import (
 	account_service_v1 "test.com/project-project/pkg/service/account.service.v1"
 	auth_service_v1 "test.com/project-project/pkg/service/auth.service.v1"
 	department_service_v1 "test.com/project-project/pkg/service/department.service.v1"
+	menu_service_v1 "test.com/project-project/pkg/service/menu.service.v1"
 	project_service_v1 "test.com/project-project/pkg/service/project.service.v1"
 	task_service_v1 "test.com/project-project/pkg/service/task.service.v1"
 )
@@ -70,6 +72,7 @@ func RegisterGrpc() *grpc.Server {
 			account.RegisterAccountServiceServer(g, account_service_v1.New()) // 注册domain
 			department.RegisterDepartmentServiceServer(g, department_service_v1.New())
 			auth.RegisterAuthServiceServer(g, auth_service_v1.New())
+			menu.RegisterMenuServiceServer(g, menu_service_v1.New())
 		}}
 
 	s := grpc.NewServer(interceptor.New().Cache()) // 创建了一个新的gRPC服务器实例 s。 // 用了拦截器，可以用多个拦截器

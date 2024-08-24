@@ -11,6 +11,7 @@ import (
 	"test.com/project-grpc/account"
 	"test.com/project-grpc/auth"
 	"test.com/project-grpc/department"
+	"test.com/project-grpc/menu"
 	"test.com/project-grpc/project"
 	"test.com/project-grpc/task"
 )
@@ -20,6 +21,7 @@ var TaskServiceClient task.TaskServiceClient
 var AccountServiceClient account.AccountServiceClient
 var DepartmentServiceClient department.DepartmentServiceClient
 var AuthServiceClient auth.AuthServiceClient
+var MenuServiceClient menu.MenuServiceClient
 
 func InitRpcProjectClient() {
 	// etcd 相关
@@ -36,4 +38,5 @@ func InitRpcProjectClient() {
 	AccountServiceClient = account.NewAccountServiceClient(conn)
 	DepartmentServiceClient = department.NewDepartmentServiceClient(conn)
 	AuthServiceClient = auth.NewAuthServiceClient(conn)
+	MenuServiceClient = menu.NewMenuServiceClient(conn)
 }
