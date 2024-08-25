@@ -21,6 +21,8 @@ func (*RouterProject) Register(r *gin.Engine) {
 	h := NewHandlerProject()
 	group := r.Group("/project")
 	group.Use(midd.TokenVerify()) // 这个组用中间件；
+	group.Use(Auth())             // 中间件：权限过滤。
+	// group.Use(ProjectAuth())      // 项目权限，中间件；
 	group.POST("/index", h.index)
 	group.POST("/project/selfList", h.myProjectList) // 用id获取我的项目list
 	group.POST("/project", h.myProjectList)          // 用id获取 select对应类型的项目list  (表单多传一个selectBy)

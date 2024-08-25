@@ -75,6 +75,21 @@ func (a *HandlerAuth) apply(c *gin.Context) {
 	}))
 }
 
+func (a *HandlerAuth) GetAuthNodes(c *gin.Context) ([]string, error) {
+	memberId := c.GetInt64("memberId")
+	msg := &auth.AuthReqMessage{
+		MemberId: memberId,
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	response, err := AuthServiceClient.AuthNodesByMemberId(ctx, msg) // 先查到角色id，然后角色对应的权限。
+	if err != nil {
+		code, msg := errs.ParseGrpcError(err)
+		return nil, errs.NewError(errs.ErrorCode(code), msg)
+	}
+	return response.List, err
+}
+
 func NewAuth() *HandlerAuth {
 	return &HandlerAuth{}
 }

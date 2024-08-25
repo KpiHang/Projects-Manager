@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"go.uber.org/zap"
+	"strconv"
 	"test.com/project-common/errs"
 	"test.com/project-project/internal/dao"
 	"test.com/project-project/internal/data"
@@ -17,6 +18,7 @@ type ProjectAuthDomain struct {
 	userRpcDomain         *UserRpcDomain
 	projectNodeDomain     *ProjectNodeDomain
 	projectAuthNodeDomain *ProjectAuthNodeDomain
+	accountDomain         *AccountDomain
 }
 
 func (d *ProjectAuthDomain) AuthList(orgCode int64) ([]*data.ProjectAuthDisplay, *errs.BError) {
@@ -72,11 +74,31 @@ func (d *ProjectAuthDomain) Save(conn database.DbConn, authId int64, nodes []str
 	return nil
 }
 
+func (d *ProjectAuthDomain) AuthNodes(memberId int64) ([]string, *errs.BError) {
+	account, err := d.accountDomain.FindAccount(memberId) // 先从member account表中查找角色id
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, model.ParamsError
+	}
+	//c, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	//defer cancel()
+	authorize := account.Authorize
+	authId, _ := strconv.ParseInt(authorize, 10, 64)
+	authNodeList, dbErr := d.projectAuthNodeDomain.AuthNodeList(authId) // 再根据角色id查授权nodelist
+	if dbErr != nil {
+		return nil, model.DBError
+	}
+	return authNodeList, nil
+}
+
 func NewProjectAuthDomain() *ProjectAuthDomain {
 	return &ProjectAuthDomain{
 		projectAuthRepo:       dao.NewProjectAuthDao(),
 		userRpcDomain:         NewUserRpcDomain(),
 		projectNodeDomain:     NewProjectNodeDomain(),
 		projectAuthNodeDomain: NewProjectAuthNodeDomain(),
+		accountDomain:         NewAccountDomain(),
 	}
 }

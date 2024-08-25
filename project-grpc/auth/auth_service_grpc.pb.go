@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthServiceClient interface {
 	AuthList(ctx context.Context, in *AuthReqMessage, opts ...grpc.CallOption) (*ListAuthMessage, error)
 	Apply(ctx context.Context, in *AuthReqMessage, opts ...grpc.CallOption) (*ApplyResponse, error)
+	AuthNodesByMemberId(ctx context.Context, in *AuthReqMessage, opts ...grpc.CallOption) (*AuthNodesResponse, error)
 }
 
 type authServiceClient struct {
@@ -52,12 +53,22 @@ func (c *authServiceClient) Apply(ctx context.Context, in *AuthReqMessage, opts 
 	return out, nil
 }
 
+func (c *authServiceClient) AuthNodesByMemberId(ctx context.Context, in *AuthReqMessage, opts ...grpc.CallOption) (*AuthNodesResponse, error) {
+	out := new(AuthNodesResponse)
+	err := c.cc.Invoke(ctx, "/auth.service.v1.AuthService/AuthNodesByMemberId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
 	AuthList(context.Context, *AuthReqMessage) (*ListAuthMessage, error)
 	Apply(context.Context, *AuthReqMessage) (*ApplyResponse, error)
+	AuthNodesByMemberId(context.Context, *AuthReqMessage) (*AuthNodesResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedAuthServiceServer) AuthList(context.Context, *AuthReqMessage)
 }
 func (UnimplementedAuthServiceServer) Apply(context.Context, *AuthReqMessage) (*ApplyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Apply not implemented")
+}
+func (UnimplementedAuthServiceServer) AuthNodesByMemberId(context.Context, *AuthReqMessage) (*AuthNodesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuthNodesByMemberId not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -120,6 +134,24 @@ func _AuthService_Apply_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_AuthNodesByMemberId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthReqMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).AuthNodesByMemberId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.service.v1.AuthService/AuthNodesByMemberId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).AuthNodesByMemberId(ctx, req.(*AuthReqMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Apply",
 			Handler:    _AuthService_Apply_Handler,
+		},
+		{
+			MethodName: "AuthNodesByMemberId",
+			Handler:    _AuthService_AuthNodesByMemberId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
