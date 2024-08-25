@@ -32,3 +32,6 @@
 
 **访问权限控制**
 ![img.png](assets/nodeList.png)
+
+**访问授权**
+![img.png](assets/authNode.png)

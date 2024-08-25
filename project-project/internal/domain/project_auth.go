@@ -6,14 +6,17 @@ import (
 	"test.com/project-common/errs"
 	"test.com/project-project/internal/dao"
 	"test.com/project-project/internal/data"
+	"test.com/project-project/internal/database"
 	"test.com/project-project/internal/repo"
 	"test.com/project-project/pkg/model"
 	"time"
 )
 
 type ProjectAuthDomain struct {
-	projectAuthRepo repo.ProjectAuthRepo
-	userRpcDomain   *UserRpcDomain
+	projectAuthRepo       repo.ProjectAuthRepo
+	userRpcDomain         *UserRpcDomain
+	projectNodeDomain     *ProjectNodeDomain
+	projectAuthNodeDomain *ProjectAuthNodeDomain
 }
 
 func (d *ProjectAuthDomain) AuthList(orgCode int64) ([]*data.ProjectAuthDisplay, *errs.BError) {
@@ -48,9 +51,32 @@ func (d *ProjectAuthDomain) AuthListPage(orgCode int64, page int64, pageSize int
 	return pdList, total, nil
 }
 
+func (d *ProjectAuthDomain) AllNodeAndAuth(authId int64) ([]*data.ProjectNodeAuthTree, []string, *errs.BError) {
+	nodeList, err := d.projectNodeDomain.NodeList()
+	if err != nil {
+		return nil, nil, err
+	}
+	checkedList, dbErr := d.projectAuthNodeDomain.AuthNodeList(authId)
+	if dbErr != nil {
+		return nil, nil, model.DBError
+	}
+	list := data.ToAuthNodeTreeList(nodeList, checkedList)
+	return list, checkedList, nil
+}
+
+func (d *ProjectAuthDomain) Save(conn database.DbConn, authId int64, nodes []string) *errs.BError {
+	err := d.projectAuthNodeDomain.Save(conn, authId, nodes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func NewProjectAuthDomain() *ProjectAuthDomain {
 	return &ProjectAuthDomain{
-		projectAuthRepo: dao.NewProjectAuthDao(),
-		userRpcDomain:   NewUserRpcDomain(),
+		projectAuthRepo:       dao.NewProjectAuthDao(),
+		userRpcDomain:         NewUserRpcDomain(),
+		projectNodeDomain:     NewProjectNodeDomain(),
+		projectAuthNodeDomain: NewProjectAuthNodeDomain(),
 	}
 }
